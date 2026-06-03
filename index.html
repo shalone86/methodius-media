@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Methodius Media — Sacred Music, Freely Given</title>
+  <meta name="description" content="Methodius Media is an independent sacred music label releasing Byzantine Catholic-inspired music under CC0." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="#" class="site-title">✝ Methodius Media</a>
+  </header>
+
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <img id="hero-img" src="" alt="Methodius Media" />
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p style="font-family:'Cinzel',serif; font-size:0.78rem; letter-spacing:0.18em; color:var(--gold); margin-bottom:0.6rem;">METHODIUS MEDIA</p>
+      <h1 id="hero-headline"></h1>
+      <div class="gold-rule"></div>
+      <p id="hero-tagline"></p>
+    </div>
+  </section>
+
+  <!-- MUSIC — TWO ARTIST COLUMNS (no header, flows straight from hero) -->
+  <section id="music" style="background: var(--grad-card);">
+    <div class="artist-split">
+      <!-- CATHOLIC LOFI -->
+      <div class="artist-col">
+        <a href="lofi.html" class="artist-badge" style="text-decoration:none;">Catholic Lofi →</a>
+        <p style="font-family:'Lora',serif; font-size:0.95rem; color:var(--cream-dark); font-style:italic; margin-bottom:1.5rem;">Ambient beats for prayer and contemplation, rooted in Byzantine tradition.</p>
+        <div class="album-grid" id="main-lofi-grid" style="grid-template-columns:1fr;"></div>
+        <a href="lofi.html" style="display:inline-block; margin-top:1.2rem; font-family:'Cinzel',serif; font-size:0.82rem; color:var(--gold); letter-spacing:0.08em; text-decoration:none; border-bottom:1px solid var(--gold);">All Catholic Lofi →</a>
+      </div>
+
+      <!-- CHAPEL POP -->
+      <div class="artist-col">
+        <a href="pop.html" class="artist-badge" style="text-decoration:none;">Chapel Pop →</a>
+        <p style="font-family:'Lora',serif; font-size:0.95rem; color:var(--cream-dark); font-style:italic; margin-bottom:1.5rem;">Contemporary pop infused with faith for the modern disciple.</p>
+        <div class="album-grid" id="main-pop-grid" style="grid-template-columns:1fr;"></div>
+        <a href="pop.html" style="display:inline-block; margin-top:1.2rem; font-family:'Cinzel',serif; font-size:0.82rem; color:var(--gold); letter-spacing:0.08em; text-decoration:none; border-bottom:1px solid var(--gold);">All Chapel Pop →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT & CONTACT -->
+  <section id="about" class="section">
+    <p class="section-title">About Us</p>
+    <p class="section-subtitle">A little about Methodius Media and how to reach us.</p>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>Methodius Media is an independent Catholic music label dedicated to creating sacred sound rooted in Byzantine and Eastern Catholic tradition. All music is released under CC0 — fully public domain, freely usable by the Church and her people.</p>
+        <p>We operate two imprints: <strong>Catholic Lofi</strong>, for ambient and contemplative music suited to prayer and study, and <strong>Chapel Pop</strong>, for upbeat contemporary music that carries the faith into everyday life.</p>
+        <p>Our work is born from a conviction that beauty, freely given, is itself an act of evangelization.</p>
+      </div>
+      <div class="contact-block">
+        <h3>Get in Touch</h3>
+        <p style="font-size:0.9rem; color:var(--ink-soft); font-style:italic; margin-bottom:1rem;">Questions, collaborations, or licensing — we'd love to hear from you.</p>
+        <a id="contact-link" href="#" class="contact-link" target="_blank"><strong id="contact-label"></strong></a>
+        <a id="email-link" href="#" class="contact-link" style="font-size:0.9rem; opacity:0.7;"><strong id="email-label"></strong></a>
+        <div style="margin-top:1.4rem; padding-top:1.2rem; border-top:1px solid var(--gold-light);">
+          <p style="font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.1em; color:var(--purple-mid); margin-bottom:0.5rem;">OUR IMPRINTS</p>
+          <a href="lofi.html" style="display:block; color:var(--crimson); font-weight:600; text-decoration:none; margin-bottom:0.3rem;">→ Catholic Lofi</a>
+          <a href="pop.html" style="display:block; color:var(--crimson); font-weight:600; text-decoration:none;">→ Chapel Pop</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section id="support" style="background: var(--grad-section); padding: 3.5rem 2rem;">
+    <div class="section" style="padding-top:0; padding-bottom:0;">
+      <p class="section-title">Support the Mission</p>
+      <p class="section-subtitle">Your generosity keeps sacred music freely available to all.</p>
+      <div class="support-grid" id="support-grid"></div>
+      <div id="donorbox-embed" style="margin-top:2rem;"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-cross">✦ ✝ ✦</div>
+    <a id="footer-contact" href="#" class="footer-contact"></a>
+    <div style="margin-top:0.7rem; font-size:0.85rem; color:var(--cream-dark); opacity:0.75;">
+      <a href="lofi.html" style="color:var(--gold-light); text-decoration:none; margin:0 0.6rem;">Catholic Lofi</a>
+      ·
+      <a href="pop.html" style="color:var(--gold-light); text-decoration:none; margin:0 0.6rem;">Chapel Pop</a>
+    </div>
+    <p class="footer-copy">© Methodius Media · CC0 Music · All freely given</p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script>
+    // Hero
+    const h = CONFIG.hero;
+    if (h.image) document.getElementById('hero-img').src = h.image;
+    document.getElementById('hero-headline').textContent = h.headline;
+    document.getElementById('hero-tagline').textContent = h.tagline;
+
+    // Albums — show latest 2 from each
+    function getBandcampId(album) {
+      if (album.embedCode) {
+        const m = album.embedCode.match(/album=(\d+)/);
+        if (m) return m[1];
+      }
+      return album.bandcampId;
+    }
+
+    function buildAlbums(albums, containerId, bgColor, compact) {
+      const grid = document.getElementById(containerId);
+      const list = (compact && albums) ? albums.slice(0, 3) : (albums || []);
+      if (list.length === 0) {
+        grid.innerHTML = '<p style="color:var(--ink-soft);font-style:italic;">No albums listed yet — add them in config.js</p>';
+        return;
+      }
+      list.forEach(album => {
+        const id = getBandcampId(album);
+        const card = document.createElement('div');
+        card.className = 'album-card';
+        card.innerHTML = `
+          <div class="album-label">
+            <span class="album-label-title">${album.title}</span>
+            <span class="album-label-year">${album.year || ''}</span>
+          </div>
+          <iframe class="album-embed"
+            src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=${bgColor || '1a0533'}/linkcol=c9a84c/tracklist=${compact ? 'false' : 'true'}/artwork=${compact ? 'small' : 'big'}/transparent=true/"
+            height="${compact ? 120 : 500}"
+            seamless
+            title="${album.title} by ${album.artist}">
+          </iframe>`;
+        grid.appendChild(card);
+      });
+    }
+
+
+    // Support
+    function buildSupport() {
+      const s = CONFIG.support;
+      document.getElementById('support-grid').innerHTML = `
+        <div class="support-card">
+          <h3>One-Time Gift</h3>
+          <p>A single donation helps fund new recordings and keep music free.</p>
+          <a href="${s.stripeLink}" target="_blank" rel="noopener" class="btn">${s.stripeLabel}</a>
+        </div>
+        <div class="support-card">
+          <h3>Monthly Support</h3>
+          <p>Become a sustaining patron of sacred music.</p>
+          <a href="https://donorbox.org/${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
+        </div>`;
+      document.getElementById('donorbox-embed').innerHTML = `
+        <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
+        <iframe src="https://donorbox.org/embed/${s.donorboxCampaign}"
+          name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
+          frameborder="0" scrolling="no" height="900px" width="100%"
+          style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
+        </iframe>`;
+    }
+
+    // Contact
+    function buildContact() {
+      const c = CONFIG.contact;
+      const link = document.getElementById('contact-link');
+      const emailEl = document.getElementById('email-link');
+      const labelEl = document.getElementById('contact-label');
+
+      if (c.chat) {
+        link.href = c.chat;
+        link.target = '_blank';
+        labelEl.textContent = c.chatLabel || 'Chat with us live';
+      }
+      emailEl.href = `mailto:${c.email}`;
+      document.getElementById('email-label').textContent = c.email;
+
+      const footer = document.getElementById('footer-contact');
+      if (c.chat) {
+        footer.href = c.chat;
+        footer.target = '_blank';
+        footer.innerHTML = `<strong>${c.chatLabel || 'Contact Us'}</strong>`;
+      } else {
+        footer.href = `mailto:${c.email}`;
+        footer.innerHTML = `<strong>${c.email}</strong>`;
+      }
+    }
+
+    buildAlbums(CONFIG.catholicLofi, 'main-lofi-grid', '1a0533', true);
+    buildAlbums(CONFIG.chapelPop, 'main-pop-grid', '3a0c1a', true);
+    buildSupport();
+    buildContact();
+  </script>
+</body>
+</html>
