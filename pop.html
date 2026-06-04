@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapel Pop — Contemporary Sacred Music</title>
+  <meta name="description" content="Contemporary pop music rooted in faith. Stream, purchase, and support." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="site-header">
+    <a href="#" class="site-title">✝ Chapel Pop</a>
+
+  </header>
+
+  <!-- PAGE INTRO -->
+  <div style="background: linear-gradient(160deg, var(--crimson) 0%, var(--purple) 55%, #1a0533 100%); padding: 3.5rem 2rem 3rem; text-align: center;">
+    <div style="max-width: 600px; margin: 0 auto;">
+      <p style="font-family:'Cinzel',serif; font-size:0.8rem; letter-spacing:0.15em; color:var(--gold); margin-bottom:0.8rem;">SACRED SOUND</p>
+      <h1 style="font-family:'Cinzel',serif; font-size:clamp(2rem,5vw,3rem); color:var(--gold-light); margin-bottom:0.9rem; text-shadow:0 3px 14px rgba(0,0,0,0.5);">Chapel Pop</h1>
+      <div class="gold-rule" style="margin: 0.8rem auto 1.1rem;"></div>
+      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Contemporary faith-filled music for the modern disciple. Upbeat, soulful, sacred.</p>
+    </div>
+  </div>
+
+  <!-- MUSIC -->
+  <section id="music" class="section">
+    <p class="section-title">Albums</p>
+    <p class="section-subtitle">Stream or purchase below. All sales support independent sacred music.</p>
+    <div class="album-grid" id="pop-grid">
+      <!-- Albums injected by JS -->
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section id="support" style="background: var(--grad-section); padding: 3.5rem 2rem;">
+    <div class="section" style="padding-top:0; padding-bottom:0;">
+      <p class="section-title">Support the Mission</p>
+      <p class="section-subtitle">Your generosity keeps sacred music freely available to all.</p>
+      <div class="support-grid" id="support-grid"></div>
+      <div id="donorbox-embed" style="margin-top:2rem;"></div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-cross">✦ ✝ ✦</div>
+    <a id="footer-contact" href="#" class="footer-contact"></a>
+    <div style="margin-top:0.7rem; font-size:0.85rem; color:var(--cream-dark); opacity:0.75;">
+      <a href="/index.html" style="color:var(--gold-light); text-decoration:none; margin:0 0.6rem;">Methodius Media</a>
+      ·
+      <a href="/lofi.html" style="color:var(--gold-light); text-decoration:none; margin:0 0.6rem;">Catholic Lofi</a>
+    </div>
+    <p class="footer-copy">© Chapel Pop · A Methodius Media project · CC0 Music</p>
+  </footer>
+
+  <script src="config.js"></script>
+  <script>
+    function getBandcampId(album) {
+      if (album.embedCode) {
+        const m = album.embedCode.match(/album=(\d+)/);
+        if (m) return m[1];
+      }
+      return album.bandcampId;
+    }
+
+    function buildAlbums(albums, containerId, bgColor) {
+      const grid = document.getElementById(containerId);
+      if (!albums || albums.length === 0) {
+        grid.innerHTML = '<p style="color:var(--ink-soft);font-style:italic;">No albums listed yet — add them in config.js</p>';
+        return;
+      }
+      albums.forEach(album => {
+        const id = getBandcampId(album);
+        const card = document.createElement('div');
+        card.className = 'album-card';
+        card.innerHTML = `
+          <div class="album-label">
+            <span class="album-label-title">${album.title}</span>
+            <span class="album-label-year">${album.year || ''}</span>
+          </div>
+          <iframe class="album-embed"
+            src="https://bandcamp.com/EmbeddedPlayer/album=${id}/size=large/bgcol=${bgColor || '1a0533'}/linkcol=c9a84c/tracklist=true/artwork=big/transparent=true/"
+            height="500"
+            seamless
+            title="${album.title} by ${album.artist}">
+          </iframe>`;
+        grid.appendChild(card);
+      });
+    }
+
+    function buildSupport() {
+      const s = CONFIG.support;
+      document.getElementById('support-grid').innerHTML = `
+        <div class="support-card">
+          <h3>One-Time Gift</h3>
+          <p>A single donation helps fund new recordings and keep music free.</p>
+          <a href="${s.stripeLink}" target="_blank" rel="noopener" class="btn">${s.stripeLabel}</a>
+        </div>
+        <div class="support-card">
+          <h3>Monthly Support</h3>
+          <p>Become a sustaining patron of sacred music.</p>
+          <a href="https://donorbox.org/${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
+        </div>`;
+      document.getElementById('donorbox-embed').innerHTML = `
+        <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
+        <iframe src="https://donorbox.org/embed/${s.donorboxCampaign}"
+          name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
+          frameborder="0" scrolling="no" height="900px" width="100%"
+          style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
+        </iframe>`;
+    }
+
+    function buildFooter() {
+      const el = document.getElementById('footer-contact');
+      const c = CONFIG.contact;
+      if (c.chat) {
+        el.href = c.chat;
+        el.target = '_blank';
+        el.innerHTML = `<strong>${c.chatLabel || 'Contact Us'}</strong>`;
+      } else {
+        el.href = `mailto:${c.email}`;
+        el.innerHTML = `<strong>${c.email}</strong>`;
+      }
+    }
+
+    buildAlbums(CONFIG.chapelPop, 'pop-grid');
+    buildSupport();
+    buildFooter();
+  </script>
+</body>
+</html>
