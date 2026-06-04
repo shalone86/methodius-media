@@ -35,7 +35,6 @@ const CONFIG = {
       title: "Ten Commandments Lofi",
       artist: "Catholic Lofi Beats ft. Shalone Cason",
       year: "2026",
-      // Paste the full embed code from Bandcamp here:
       bandcampId: "1713466879"
     },
     {
@@ -43,6 +42,18 @@ const CONFIG = {
       artist: "Catholic Lofi Beats",
       year: "2024",
       bandcampId: "594351153"
+    },
+      {
+      title: "12 Days of Christmas Lofi",
+      artist: "Catholic Lofi Beats",
+      year: "2022",
+      bandcampId: "3773185173"
+    },
+     {
+      title: "Advent Lofi",
+      artist: "Catholic Lofi Beats",
+      year: "2023",
+      bandcampId: "1106122776"
     },
     // Add more albums below — copy/paste the block above and replace the values
   ],
