@@ -6,6 +6,10 @@
   <title>Catholic Lofi — Sacred Beats for Prayer & Study</title>
   <meta name="description" content="Ambient and lofi music rooted in Byzantine Catholic tradition. Free to stream, free to share." />
   <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" href="/favicon.ico">
 </head>
 <body>
 
@@ -20,14 +24,14 @@
       <p style="font-family:'Cinzel',serif; font-size:0.8rem; letter-spacing:0.15em; color:var(--gold); margin-bottom:0.8rem;">SACRED SOUND</p>
       <h1 style="font-family:'Cinzel',serif; font-size:clamp(2rem,5vw,3rem); color:var(--gold-light); margin-bottom:0.9rem; text-shadow:0 3px 14px rgba(0,0,0,0.5);">Catholic Lofi</h1>
       <div class="gold-rule" style="margin: 0.8rem auto 1.1rem;"></div>
-      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Ambient beats for prayer, study, and quiet contemplation — rooted in Byzantine Catholic tradition. All music released under CC0.</p>
+      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Ambient beats for prayer, study, and quiet contemplation — rooted in both Byzantine and Latin Catholic tradition. All music released under CC0, freely given to the Church and the world.</p>
     </div>
   </div>
 
   <!-- MUSIC -->
   <section id="music" class="section">
     <p class="section-title">Albums</p>
-    <p class="section-subtitle">Stream or purchase below. All sales support independent sacred music.</p>
+    <p class="section-subtitle">Stream or purchase below. All sales help fund new music and future film projects.</p>
     <div class="album-grid" id="lofi-grid">
       <!-- Albums injected by JS -->
     </div>
@@ -37,7 +41,7 @@
   <section id="support" style="background: var(--grad-section); padding: 3.5rem 2rem;">
     <div class="section" style="padding-top:0; padding-bottom:0;">
       <p class="section-title">Support the Mission</p>
-      <p class="section-subtitle">Your generosity keeps sacred music freely available to all.</p>
+      <p class="section-subtitle">Your support helps us make more music and one day bring the faith to life through short films and full-length musical productions.</p>
       <div class="support-grid" id="support-grid">
         <!-- injected by JS -->
       </div>
@@ -55,7 +59,7 @@
       ·
       <a href="/pop.html" style="color:var(--gold-light); text-decoration:none; margin:0 0.6rem;">Chapel Pop</a>
     </div>
-    <p class="footer-copy">© Catholic Lofi · A Methodius Media project · CC0 Music</p>
+    <p class="footer-copy">© Catholic Lofi · A Cyril & Methodius Media project · CC0 Music</p>
   </footer>
 
   <script src="config.js"></script>
@@ -100,12 +104,12 @@
       document.getElementById('support-grid').innerHTML = `
         <div class="support-card">
           <h3>One-Time Gift</h3>
-          <p>A single donation helps fund new recordings and keep music free.</p>
+          <p>Fund new recordings, videos, and the future of Catholic musical storytelling.</p>
           <a href="${s.stripeLink}" target="_blank" rel="noopener" class="btn">${s.stripeLabel}</a>
         </div>
         <div class="support-card">
           <h3>Monthly Support</h3>
-          <p>Become a sustaining patron of sacred music.</p>
+          <p>Become a sustaining patron and help us grow from music to musicals.</p>
           <a href="https://donorbox.org/${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
         </div>`;
 
