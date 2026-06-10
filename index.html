@@ -15,9 +15,16 @@
 </head>
 <body>
 
-  <header class="site-header">
-    <a href="#" class="site-title">✝ Cyril & Methodius Media</a>
-  </header>
+<header class="site-header" style="display:flex; align-items:center; justify-content:space-between;">
+  <a href="index.html" class="site-title">✝ Cyril & Methodius Media</a>
+  <nav class="site-nav">
+    <a href="https://donorbox.org/methodius" target="_blank" rel="noopener">Donate</a>
+    <a href="#about">About</a>
+    <a href="https://tawk.to/methodius" target="_blank" rel="noopener">Chat</a>
+    <a href="lofi.html">Lofi</a>
+    <a href="pop.html">Pop</a>
+  </nav>
+</header>
 
 
   <!-- HERO -->
@@ -68,7 +75,7 @@
         <h3>Get in Touch</h3>
         <p style="font-size:0.9rem; color:var(--ink-soft); font-style:italic; margin-bottom:1rem;">Questions, collaborations, or licensing — we'd love to hear from you.</p>
         <a id="contact-link" href="#" class="contact-link" target="_blank"><strong id="contact-label"></strong></a>
-        <a id="email-link" href="#" class="contact-link" style="font-size:0.9rem; opacity:0.7;"><strong id="email-label"></strong></a>
+        <!-- a id="email-link" href="#" class="contact-link" style="font-size:0.9rem; opacity:0.7;"><strong id="email-label"></strong></a> -->
         <div style="margin-top:1.4rem; padding-top:1.2rem; border-top:1px solid var(--gold-light);">
           <p style="font-family:'Cinzel',serif; font-size:0.75rem; letter-spacing:0.1em; color:var(--purple-mid); margin-bottom:0.5rem;">OUR IMPRINTS</p>
           <a href="lofi.html" style="display:block; color:var(--crimson); font-weight:600; text-decoration:none; margin-bottom:0.3rem;">→ Catholic Lofi</a>
@@ -156,11 +163,11 @@
         <div class="support-card">
           <h3>Monthly Support</h3>
           <p>Become a sustaining patron and help us grow from music to musicals.</p>
-          <a href="https://donorbox.org/${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
+          <a href="https://donorbox.org/methodius${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
         </div>`;
       document.getElementById('donorbox-embed').innerHTML = `
         <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
-        <iframe src="https://donorbox.org/embed/${s.donorboxCampaign}"
+        <iframe src="https://donorbox.org/embed/methodius?${s.donorboxCampaign}"
           name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
           frameborder="0" scrolling="no" height="900px" width="100%"
           style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
@@ -171,7 +178,7 @@
     function buildContact() {
       const c = CONFIG.contact;
       const link = document.getElementById('contact-link');
-      const emailEl = document.getElementById('email-link');
+      //const emailEl = document.getElementById('email-link');
       const labelEl = document.getElementById('contact-label');
 
       if (c.chat) {
@@ -179,8 +186,8 @@
         link.target = '_blank';
         labelEl.textContent = c.chatLabel || 'Chat with us live';
       }
-      emailEl.href = `mailto:${c.email}`;
-      document.getElementById('email-label').textContent = c.email;
+      //emailEl.href = `mailto:${c.email}`;
+      //document.getElementById('email-label').textContent = c.email;
 
       const footer = document.getElementById('footer-contact');
       if (c.chat) {
