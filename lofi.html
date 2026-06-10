@@ -30,7 +30,7 @@
       <p style="font-family:'Cinzel',serif; font-size:0.8rem; letter-spacing:0.15em; color:var(--gold); margin-bottom:0.8rem;">SACRED SOUND</p>
       <h1 style="font-family:'Cinzel',serif; font-size:clamp(2rem,5vw,3rem); color:var(--gold-light); margin-bottom:0.9rem; text-shadow:0 3px 14px rgba(0,0,0,0.5);">Catholic Lofi</h1>
       <div class="gold-rule" style="margin: 0.8rem auto 1.1rem;"></div>
-      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Catholic Lofi Beats is a music cooperative dedicated to creating Lofi music for studying, relaxing, and prayer, rooted in both Byzantine and Latin Catholic traditions. All music is released under CC0 — fully public domain, freely usable by the Church and her people.</p>
+      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Catholic Lofi Beats is a music cooperative dedicated to creating Lofi music for studying, relaxing, and prayer, rooted in both Byzantine and Latin Catholic traditions. Our short, repetitive spoken and sung hooks help children and adults learn their faith better. No generative AI is ever used. Our music is also free via CC0 public domain.</p>
     </div>
   </div>
 
@@ -47,12 +47,10 @@
   <section id="support" style="background: var(--grad-section); padding: 3.5rem 2rem;">
     <div class="section" style="padding-top:0; padding-bottom:0;">
       <p class="section-title">Support the Mission</p>
-      <!--<p class="section-subtitle">Your support helps us make more music and one day bring the faith to life through short films and full-length musical productions.</p> -->
-      <div class="support-grid" id="support-grid">
-        <!-- injected by JS -->
-      </div>
-      <!-- Donorbox embed auto-renders below -->
-      <div id="donorbox-embed" style="margin-top:2rem;"></div>
+      <div id="donorbox-embed">
+  <script type="module" src="https://donorbox.org/widgets.js" async></script>
+  <dbox-widget campaign="methodius" type="donation_form" enable-auto-scroll="true"></dbox-widget>
+</div>
     </div>
   </section>
 
@@ -103,32 +101,7 @@
         grid.appendChild(card);
       });
     }
-
-    // Build support section
-    function buildSupport() {
-      const s = CONFIG.support;
-      document.getElementById('support-grid').innerHTML = `
-        <div class="support-card">
-          <h3>One-Time Gift</h3>
-          <p>Fund new recordings, videos, and the future of Catholic musical storytelling.</p>
-          <a href="${s.stripeLink}" target="_blank" rel="noopener" class="btn">${s.stripeLabel}</a>
-        </div>
-        <div class="support-card">
-          <h3>Monthly Support</h3>
-          <p>Become a sustaining patron and help us grow from music to musicals.</p>
-          <a href="https://donorbox.org/methodius${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
-        </div>`;
-
-      // Donorbox embed widget
-      document.getElementById('donorbox-embed').innerHTML = `
-        <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
-        <iframe src="https://donorbox.org/embed/methodius?${s.donorboxCampaign}"
-          name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
-          frameborder="0" scrolling="no" height="900px" width="100%"
-          style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
-        </iframe>`;
-    }
-
+    
     // Footer contact
     function buildFooter() {
       const el = document.getElementById('footer-contact');
