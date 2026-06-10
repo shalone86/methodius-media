@@ -18,7 +18,7 @@ const CONFIG = {
   // --- SITE INFO ---
   contact: {
     email: "hello@methodiusmedia.com",       // shown as mailto link
-    chat: "https://tawk.to/your-chat-link",  // replace with your tawk.to link
+    chat: "https://tawk.to/methodius",  // replace with your tawk.to link
     chatLabel: "Chat with us live"
   },
 
@@ -26,7 +26,7 @@ const CONFIG = {
   hero: {
     image: "hero.jpg",           // place image in same folder as index.html
     headline: "Sacred Sound. Open Source.",
-    tagline: "Music rooted in faith, freely shared with the world."
+    tagline: "Immersive lofi and catchy dance pop for Byzantine and Latin Catholics.Crafted by humans. Free for everyone."
   },
 
   // --- CATHOLIC LOFI ALBUMS ---
