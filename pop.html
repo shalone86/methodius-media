@@ -15,10 +15,14 @@
 </head>
 <body>
 
-  <header class="site-header">
-    <a href="#" class="site-title">✝ Chapel Pop</a>
-
-  </header>
+<header class="site-header" style="display:flex; align-items:center; justify-content:space-between;">
+  <a href="pop.html" class="site-title">✝ Chapel Pop</a>
+  <nav class="site-nav">
+    <a href="#support">Donate</a>
+    <a href="https://tawk.to/methodius" target="_blank" rel="noopener">Chat</a>
+    <a href="index.html">Methodius Media</a>
+  </nav>
+</header>
 
   <!-- PAGE INTRO -->
   <div style="background: linear-gradient(160deg, var(--crimson) 0%, var(--purple) 55%, #1a0533 100%); padding: 3.5rem 2rem 3rem; text-align: center;">
@@ -43,8 +47,8 @@
   <section id="support" style="background: var(--grad-section); padding: 3.5rem 2rem;">
     <div class="section" style="padding-top:0; padding-bottom:0;">
       <p class="section-title">Support the Mission</p>
-      <p class="section-subtitle">Your support helps us make more music and one day bring the faith to life through short films and full-length musical productions.</p>
-      <div class="support-grid" id="support-grid"></div>
+      <!-- <p class="section-subtitle">Your support helps us make more music and one day bring the faith to life through short films and full-length musical productions.</p>
+      <div class="support-grid" id="support-grid"></div> -->
       <div id="donorbox-embed" style="margin-top:2rem;"></div>
     </div>
   </section>
@@ -107,11 +111,11 @@
         <div class="support-card">
           <h3>Monthly Support</h3>
           <p>Become a sustaining patron and help us grow from music to musicals.</p>
-          <a href="https://donorbox.org/${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
+          <a href="https://donorbox.org/methodius${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
         </div>`;
       document.getElementById('donorbox-embed').innerHTML = `
         <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
-        <iframe src="https://donorbox.org/embed/${s.donorboxCampaign}"
+        <iframe src="https://donorbox.org/embed/methodius?${s.donorboxCampaign}"
           name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
           frameborder="0" scrolling="no" height="900px" width="100%"
           style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
