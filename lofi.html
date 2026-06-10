@@ -15,10 +15,14 @@
 </head>
 <body>
 
-  <header class="site-header">
-    <a href="#" class="site-title">✝ Catholic Lofi</a>
-
-  </header>
+  <header class="site-header" style="display:flex; align-items:center; justify-content:space-between;">
+  <a href="lofi.html" class="site-title">✝ Catholic Lofi</a>
+  <nav class="site-nav">
+    <a href="https://donorbox.org/methodius" target="_blank" rel="noopener">Donate</a>
+    <a href="https://tawk.to/methodius" target="_blank" rel="noopener">Chat</a>
+    <a href="index.html">Methodius Media</a>
+  </nav>
+</header>
 
   <!-- PAGE INTRO -->
   <div style="background: var(--grad-hero); padding: 3.5rem 2rem 3rem; text-align: center;">
@@ -26,7 +30,7 @@
       <p style="font-family:'Cinzel',serif; font-size:0.8rem; letter-spacing:0.15em; color:var(--gold); margin-bottom:0.8rem;">SACRED SOUND</p>
       <h1 style="font-family:'Cinzel',serif; font-size:clamp(2rem,5vw,3rem); color:var(--gold-light); margin-bottom:0.9rem; text-shadow:0 3px 14px rgba(0,0,0,0.5);">Catholic Lofi</h1>
       <div class="gold-rule" style="margin: 0.8rem auto 1.1rem;"></div>
-      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Ambient beats for prayer, study, and quiet contemplation — rooted in both Byzantine and Latin Catholic tradition. All music released under CC0, freely given to the Church and the world.</p>
+      <p style="color:var(--cream); font-style:italic; font-size:1.05rem;">Catholic Lofi Beats is a music cooperative dedicated to creating Lofi music for studying, relaxing, and prayer, rooted in both Byzantine and Latin Catholic traditions. All music is released under CC0 — fully public domain, freely usable by the Church and her people.</p>
     </div>
   </div>
 
@@ -112,13 +116,13 @@
         <div class="support-card">
           <h3>Monthly Support</h3>
           <p>Become a sustaining patron and help us grow from music to musicals.</p>
-          <a href="https://donorbox.org/${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
+          <a href="https://donorbox.org/methodius${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
         </div>`;
 
       // Donorbox embed widget
       document.getElementById('donorbox-embed').innerHTML = `
         <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
-        <iframe src="https://donorbox.org/embed/${s.donorboxCampaign}"
+        <iframe src="https://donorbox.org/embed/methodius?${s.donorboxCampaign}"
           name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
           frameborder="0" scrolling="no" height="900px" width="100%"
           style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
