@@ -18,7 +18,7 @@
 <header class="site-header" style="display:flex; align-items:center; justify-content:space-between;">
   <a href="index.html" class="site-title">✝ Cyril & Methodius Media</a>
   <nav class="site-nav">
-    <a href="https://donorbox.org/methodius" target="_blank" rel="noopener">Donate</a>
+    <a href="#support">Donate</a>
     <a href="#about">About</a>
     <a href="https://tawk.to/methodius" target="_blank" rel="noopener">Chat</a>
     <a href="lofi.html">Lofi</a>
@@ -89,9 +89,10 @@
   <section id="support" style="background: var(--grad-section); padding: 3.5rem 2rem;">
     <div class="section" style="padding-top:0; padding-bottom:0;">
       <p class="section-title">Support our Mission</p>
-      <p class="section-subtitle">Your donations will help us expand into animated and live-action short and feature-length musicals.</p>
-      <div class="support-grid" id="support-grid"></div>
-      <div id="donorbox-embed" style="margin-top:2rem;"></div>
+      <div id="donorbox-embed">
+  <script type="module" src="https://donorbox.org/widgets.js" async></script>
+  <dbox-widget campaign="methodius" type="donation_form" enable-auto-scroll="true"></dbox-widget>
+</div>
     </div>
   </section>
 
@@ -148,30 +149,6 @@
           </iframe>`;
         grid.appendChild(card);
       });
-    }
-
-
-    // Support
-    function buildSupport() {
-      const s = CONFIG.support;
-      document.getElementById('support-grid').innerHTML = `
-        <div class="support-card">
-          <h3>One-Time Gift</h3>
-          <p>Fund new recordings, videos, and the future of Catholic musical storytelling.</p>
-          <a href="${s.stripeLink}" target="_blank" rel="noopener" class="btn">${s.stripeLabel}</a>
-        </div>
-        <div class="support-card">
-          <h3>Monthly Support</h3>
-          <p>Become a sustaining patron and help us grow from music to musicals.</p>
-          <a href="https://donorbox.org/methodius${s.donorboxCampaign}" target="_blank" rel="noopener" class="btn">${s.donorboxLabel}</a>
-        </div>`;
-      document.getElementById('donorbox-embed').innerHTML = `
-        <script src="https://donorbox.org/widget.js" paypalexpress="false"><\/script>
-        <iframe src="https://donorbox.org/embed/methodius?${s.donorboxCampaign}"
-          name="donorbox" allowpaymentrequest="allowpaymentrequest" seamless="seamless"
-          frameborder="0" scrolling="no" height="900px" width="100%"
-          style="max-width:500px; max-height:none !important; display:block; margin:0 auto;">
-        </iframe>`;
     }
 
     // Contact
