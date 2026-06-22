@@ -26,11 +26,17 @@ const CONFIG = {
   hero: {
     image: "hero.jpg",           // place image in same folder as index.html
     headline: "Sacred Sound. Open Source.",
-    tagline: "Immersive lofi and catchy dance pop for Byzantine and Latin Catholics.Crafted by humans. Free for everyone."
+    tagline: "Immersive lofi and catchy dance pop for Byzantine and Latin Catholics. Crafted by humans. Free for everyone."
   },
 
   // --- CATHOLIC LOFI ALBUMS ---
   catholicLofi: [
+    {
+      title: "Byzantine Daily Prayers Lofi",
+      artist: "Catholic Lofi Beats ft. Shalone Cason",
+      year: "2026",
+      bandcampId: "3024765759"
+    },
     {
       title: "Ten Commandments Lofi",
       artist: "Catholic Lofi Beats ft. Shalone Cason",
