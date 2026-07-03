@@ -30,7 +30,13 @@ const CONFIG = {
   },
 
   // --- CATHOLIC LOFI ALBUMS ---
-  catholicLofi: [
+  catholicLofi: [ 
+    {
+      title: "Our Father - Catholic Lofi",
+      artist: "Catholic Lofi Beats ft. Shalone Cason",
+      year: "2026",
+      bandcampId: "737153111"
+    },
     {
       title: "Byzantine Daily Prayers Lofi",
       artist: "Catholic Lofi Beats ft. Shalone Cason",
