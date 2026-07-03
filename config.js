@@ -71,7 +71,13 @@ const CONFIG = {
   ],
 
   // --- CHAPEL POP ALBUMS ---
-  chapelPop: [
+  chapelPop: [ 
+    {
+       title: "Our Father",
+       artist: "Chapel Pop",
+       year: "2026",
+       bandcampId: "3605100398"
+     },
     {
        title: "Byzantine Daily Prayers",
        artist: "Chapel Pop",
