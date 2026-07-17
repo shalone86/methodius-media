@@ -73,6 +73,12 @@ const CONFIG = {
   // --- CHAPEL POP ALBUMS ---
   chapelPop: [ 
     {
+       title: "Hail Mary - Rosary Prayers",
+       artist: "Chapel Pop",
+       year: "2026",
+       bandcampId: "3985338179"
+     },
+    {
        title: "Our Father",
        artist: "Chapel Pop",
        year: "2026",
