@@ -36,7 +36,7 @@
       padding: 0.75rem 1rem;
       display: flex;
       justify-content: center;
-      gap: 1rem;
+      gap: 1.25rem;
       flex-wrap: wrap;
     }
     .sticky-nav a {
@@ -72,7 +72,6 @@
       transition: background 0.2s;
     }
     .btn-donate:hover { background: var(--accent-hover); }
-    
 
     /* IMPRINT SECTIONS */
     .imprint-section { margin-top: 3rem; }
@@ -104,6 +103,7 @@
     }
     .album-summary::-webkit-details-marker { display: none; }
     .album-title-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .album-symbol { color: var(--accent); font-size: 1.1rem; }
     .album-title { font-size: 1.05rem; color: var(--text); }
     .album-actions { display: flex; align-items: center; gap: 0.75rem; }
 
@@ -158,12 +158,13 @@
 </head>
 <body>
 
-  <!-- STICKY MENU -->
+  <!-- STICKY MENU WITH LOSSLESS DIRECTORY LINK -->
   <nav class="sticky-nav">
     <a href="#catholic-lofi">Catholic Lofi</a>
     <a href="#chapel-pop">Chapel Pop</a>
     <a href="#chapel-ambient">Chapel Ambient</a>
     <a href="#pious-piano">Pious Piano</a>
+    <a href="https://archive.org/download/cyril-and-methodius-media/" target="_blank" rel="noopener">Lossless</a>
     <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
   </nav>
 
@@ -174,12 +175,6 @@
         Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
       </p>
       <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" class="btn-donate">✝ Support the Mission</a>
-      <p style="font-size: 0.85rem; color: var(--muted); margin-top: 1.25rem;">
-        Need uncompressed 24-bit WAVs or FLACs for church/production use? 
-      <a href="https://archive.org/download/cyril-and-methodius-media/" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: underline;">
-      Browse raw master files on Archive.org →
-      </a>
-    </p>
     </header>
 
     <main>
@@ -225,13 +220,20 @@
     const ITEM_ID = "cyril-and-methodius-media";
     const BASE_URL = `https://archive.org/download/${ITEM_ID}`;
 
+    // IMPRINT SYMBOL MAP
+    const IMPRINT_SYMBOLS = {
+      "catholic-lofi": "⁜",
+      "chapel-pop": "✟",
+      "chapel-ambient": "☩",
+      "pious-piano": "☨"
+    };
+
     async function loadMusic() {
       try {
         const response = await fetch(`https://archive.org/metadata/${ITEM_ID}`);
         const data = await response.json();
         const files = data.files || [];
 
-        // Structure: imprints -> albums -> tracks & zipUrl
         const imprints = {
           "catholic-lofi": {},
           "chapel-pop": {},
@@ -240,16 +242,15 @@
         };
 
         files.forEach(file => {
-          if (file.name.startsWith('.')) return; // Ignore hidden files
+          if (file.name.startsWith('.')) return;
 
           const parts = file.name.split('/');
-          if (parts.length < 3) return; // Expects Imprint / Album / Track
+          if (parts.length < 3) return;
 
           const imprintFolder = parts[0].toLowerCase().trim();
           const albumName = parts[1];
           const fileName = parts[2];
 
-          // Determine key imprint matching
           let targetImprintKey = "";
           if (imprintFolder.includes("lofi")) targetImprintKey = "catholic-lofi";
           else if (imprintFolder.includes("pop")) targetImprintKey = "chapel-pop";
@@ -264,11 +265,9 @@
 
           const fileUrl = `${BASE_URL}/${encodeURIComponent(parts[0])}/${encodeURIComponent(parts[1])}/${encodeURIComponent(parts[2])}`;
 
-          // Detect ZIP file for full album download
           if (fileName.endsWith('.zip')) {
             imprints[targetImprintKey][albumName].zipUrl = fileUrl;
           } 
-          // Strictly grab MP3 files (ignoring WAVs)
           else if (fileName.endsWith('.mp3')) {
             const trackTitle = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").replace(/_vbr$/i, "");
             imprints[targetImprintKey][albumName].tracks.push({
@@ -278,10 +277,10 @@
           }
         });
 
-        // Render to DOM
         Object.keys(imprints).forEach(imprintKey => {
           const container = document.getElementById(`container-${imprintKey}`);
           const albums = imprints[imprintKey];
+          const symbol = IMPRINT_SYMBOLS[imprintKey] || "✦";
 
           Object.keys(albums).forEach((albumName, index) => {
             const albumData = albums[albumName];
@@ -289,10 +288,10 @@
 
             const details = document.createElement('details');
             details.className = 'album-accordion';
-            if (index === 0) details.open = true; // First album open by default
+            if (index === 0) details.open = true;
 
             const zipButtonHtml = albumData.zipUrl 
-              ? `<a href="${albumData.zipUrl}" download class="btn-zip" onclick="event.stopPropagation();">↓ Full Album (ZIP)</a>`
+              ? `<a href="${albumData.zipUrl}" download class="btn-zip" onclick="event.stopPropagation();">↓ Full Album (WAV ZIP)</a>`
               : '';
 
             let tracksHtml = '';
@@ -315,7 +314,8 @@
             details.innerHTML = `
               <summary class="album-summary">
                 <div class="album-title-wrap">
-                  <span class="album-title">💿 ${albumName}</span>
+                  <span class="album-symbol">${symbol}</span>
+                  <span class="album-title">${albumName}</span>
                 </div>
                 <div class="album-actions">
                   ${zipButtonHtml}
@@ -337,10 +337,8 @@
       }
     }
 
-    // CONTINUOUS PLAYLIST & MONO-PLAY LOGIC
     function setupContinuousPlayback() {
       document.addEventListener('play', (e) => {
-        // Pause any currently playing audio when a new one starts
         document.querySelectorAll('audio').forEach(audio => {
           if (audio !== e.target) audio.pause();
         });
@@ -353,7 +351,6 @@
 
         if (currentIndex !== -1 && currentIndex < allAudios.length - 1) {
           const nextAudio = allAudios[currentIndex + 1];
-          // Open parent accordion if closed
           const parentAccordion = nextAudio.closest('details');
           if (parentAccordion) parentAccordion.open = true;
           
