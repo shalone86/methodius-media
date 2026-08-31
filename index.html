@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cyril & Methodius Media — Sacred Sound. Open Source.</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    :root {
+      --bg: #121214;
+      --card-bg: #1b1b1e;
+      --border: #2e2e34;
+      --text: #e4e4e7;
+      --muted: #a1a1aa;
+      --accent: #d4af37;
+      --accent-hover: #f1c40f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+      max-width: 850px;
+      margin: 0 auto;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+    .site-title { font-size: 1.8rem; color: var(--accent); margin-bottom: 0.5rem; }
+    .hero-mission { color: var(--muted); font-size: 1rem; max-width: 680px; margin: 0 auto 1.5rem auto; }
+    .btn-donate {
+      display: inline-block;
+      background: var(--accent);
+      color: #000;
+      padding: 0.65rem 1.5rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .btn-donate:hover { background: var(--accent-hover); }
+
+    .imprint-section { margin-bottom: 2.5rem; }
+    .imprint-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .imprint-header h2 { font-size: 1.3rem; color: var(--accent); }
+    .imprint-subtitle { font-size: 0.85rem; color: var(--muted); font-style: italic; }
+
+    .track-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .track-row {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+    .track-info { flex: 1 1 200px; }
+    .track-title { font-weight: 600; color: var(--text); display: block; font-size: 0.95rem; }
+    .track-album { font-size: 0.8rem; color: var(--muted); }
+    .track-controls { display: flex; align-items: center; gap: 0.75rem; flex: 2 1 300px; }
+    audio { width: 100%; height: 36px; border-radius: 4px; }
+    .btn-download {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      text-decoration: none;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .btn-download:hover { border-color: var(--accent); background: rgba(212, 175, 55, 0.1); }
+    footer { text-align: center; border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 3rem; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 class="site-title">✝ Cyril & Methodius Media</h1>
+    <p class="hero-mission">
+      Sacred Sound. Open Source. Free sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
+    </p>
+    <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" class="btn-donate">✝ Support the Mission</a>
+  </header>
+
+  <main>
+    <section class="imprint-section" id="catholic-lofi">
+      <div class="imprint-header">
+        <h2>Catholic Lofi</h2>
+        <span class="imprint-subtitle">Ambient beats for prayer and study</span>
+      </div>
+      <div class="track-list" id="list-catholic-lofi"></div>
+    </section>
+
+    <section class="imprint-section" id="chapel-pop">
+      <div class="imprint-header">
+        <h2>Chapel Pop</h2>
+        <span class="imprint-subtitle">Contemporary faith-infused beats for kids</span>
+      </div>
+      <div class="track-list" id="list-chapel-pop"></div>
+    </section>
+
+    <section class="imprint-section" id="chapel-ambient">
+      <div class="imprint-header">
+        <h2>Chapel Ambient</h2>
+        <span class="imprint-subtitle">Deep meditative atmospheric soundscapes</span>
+      </div>
+      <div class="track-list" id="list-chapel-ambient"></div>
+    </section>
+
+    <section class="imprint-section" id="pious-piano">
+      <div class="imprint-header">
+        <h2>Pious Piano</h2>
+        <span class="imprint-subtitle">Minimalist acoustic reflection & prayer</span>
+      </div>
+      <div class="track-list" id="list-pious-piano"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© Cyril & Methodius Media · CC0 Public Domain · All freely given for AMDG</p>
+  </footer>
+
+  <script>
+    const ITEM_ID = "cyril-and-methodius-media";
+    const BASE_URL = `https://archive.org/download/${ITEM_ID}`;
+
+    async function loadMusic() {
+      try {
+        const response = await fetch(`https://archive.org/metadata/${ITEM_ID}`);
+        const data = await response.json();
+        const files = data.files || [];
+
+        // Filter out non-audio files and hidden files
+        const audioFiles = files.filter(f => 
+          (f.name.endsWith('.mp3') || f.name.endsWith('.wav')) && 
+          !f.name.startsWith('.')
+        );
+
+        audioFiles.forEach(file => {
+          const parts = file.name.split('/');
+          if (parts.length < 3) return; // Expects Imprint / Album / Track
+
+          const imprintRaw = parts[0].toLowerCase().trim();
+          const albumName = parts[1];
+          const fileName = parts[2];
+          const trackTitle = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+
+          let containerId = "";
+          if (imprintRaw.includes("lofi")) containerId = "list-catholic-lofi";
+          else if (imprintRaw.includes("pop")) containerId = "list-chapel-pop";
+          else if (imprintRaw.includes("ambient")) containerId = "list-chapel-ambient";
+          else if (imprintRaw.includes("piano")) containerId = "list-pious-piano";
+
+          const container = document.getElementById(containerId);
+          if (!container) return;
+
+          const fileUrl = `${BASE_URL}/${encodeURIComponent(parts[0])}/${encodeURIComponent(parts[1])}/${encodeURIComponent(parts[2])}`;
+          const fileType = file.name.endsWith('.mp3') ? 'audio/mpeg' : 'audio/wav';
+
+          const row = document.createElement('div');
+          row.className = 'track-row';
+          row.innerHTML = `
+            <div class="track-info">
+              <span class="track-title">${trackTitle}</span>
+              <span class="track-album">${albumName}</span>
+            </div>
+            <div class="track-controls">
+              <audio controls preload="none">
+                <source src="${fileUrl}" type="${fileType}">
+              </audio>
+              <a href="${fileUrl}" download class="btn-download">↓ Download</a>
+            </div>
+          `;
+          container.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Error loading tracks from Archive.org:", err);
+      }
+    }
+
+    loadMusic();
+  </script>
+</body>
+</html>
