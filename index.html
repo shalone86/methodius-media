@@ -141,37 +141,41 @@
     .track-title { font-weight: 500; color: var(--text); font-size: 0.95rem; }
     .track-controls { display: flex; align-items: center; gap: 0.75rem; flex: 2 1 300px; }
     audio { width: 100%; height: 36px; border-radius: 4px; }
+    
     .btn-download {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--muted);
       padding: 0.35rem 0.75rem;
       font-size: 0.75rem;
-      text-decoration: none;
       border-radius: 4px;
       white-space: nowrap;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
     }
     .btn-download:hover { border-color: var(--text); color: var(--text); }
 
     footer { text-align: center; border-top: 1px solid var(--border); padding-top: 2rem; margin-top: 4rem; color: var(--muted); font-size: 0.85rem; }
+    footer a { color: var(--muted); text-decoration: underline; }
+    footer a:hover { color: var(--accent); }
   </style>
 </head>
 <body>
 
-  <!-- STICKY MENU WITH LOSSLESS DIRECTORY LINK -->
+  <!-- STICKY MENU -->
   <nav class="sticky-nav">
     <a href="#catholic-lofi">Catholic Lofi</a>
     <a href="#chapel-pop">Chapel Pop</a>
     <a href="#chapel-ambient">Chapel Ambient</a>
     <a href="#pious-piano">Pious Piano</a>
-    <a href="https://archive.org/download/cyril-and-methodius-media/" target="_blank" rel="noopener">Lossless</a>
+    <a id="nav-lossless-link" href="#" target="_blank" rel="noopener">Lossless</a>
     <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
-    <a href="mailto:shalone@sdcason.com">Contact</a>
   </nav>
 
   <div class="container">
     <header>
-      <h1 class="site-title">☦ Cyril & Methodius Media</h1>
+      <h1 class="site-title">✝ Cyril & Methodius Media</h1>
       <p class="hero-mission">
         Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
       </p>
@@ -213,13 +217,20 @@
     </main>
 
     <footer>
-      <p>CCO Cyril & Methodius Media · Public Domain · Freely given. AMDG ☦</p>
+      <p>© Cyril & Methodius Media · CC0 Public Domain · All freely given for AMDG</p>
+      <p style="margin-top: 0.5rem;">
+        <a href="mailto:hello@methodiusmedia.com">Contact & Prayer Requests</a>
+      </p>
     </footer>
   </div>
 
   <script>
-    const ITEM_ID = "cyril-and-methodius-media";
+    // UPDATE ITEM IDENTIFIER HERE
+    const ITEM_ID = "cyril-and-methodius-media-v2";
     const BASE_URL = `https://archive.org/download/${ITEM_ID}`;
+
+    // Update lossless nav link dynamically
+    document.getElementById('nav-lossless-link').href = BASE_URL;
 
     // IMPRINT SYMBOL MAP
     const IMPRINT_SYMBOLS = {
@@ -228,6 +239,35 @@
       "chapel-ambient": "☩",
       "pious-piano": "☨"
     };
+
+    // FORCE DIRECT MP3 DOWNLOAD VIA BLOB
+    async function triggerDirectDownload(e) {
+      e.preventDefault();
+      const btn = e.currentTarget;
+      const url = btn.dataset.url;
+      const filename = btn.dataset.filename;
+      const originalText = btn.textContent;
+
+      btn.textContent = "⏳...";
+
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        window.open(url, '_blank');
+      } finally {
+        btn.textContent = originalText;
+      }
+    }
 
     async function loadMusic() {
       try {
@@ -306,7 +346,10 @@
                     <audio controls preload="none">
                       <source src="${track.url}" type="audio/mpeg">
                     </audio>
-                    <a href="${track.url}" download class="btn-download">↓ MP3</a>
+                    <button class="btn-download" 
+                            data-url="${track.url}" 
+                            data-filename="${track.title}.mp3" 
+                            onclick="triggerDirectDownload(event)">↓ MP3</button>
                   </div>
                 </div>
               `;
