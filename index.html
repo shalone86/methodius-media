@@ -56,7 +56,7 @@
 
     /* HEADER & HERO */
     header {
-      padding: 3rem 0 2rem 0;
+      padding: 3rem 0 1.5rem 0;
       text-align: center;
     }
     .site-title { font-size: 2rem; color: var(--accent); margin-bottom: 0.75rem; letter-spacing: 0.03em; }
@@ -73,8 +73,32 @@
     }
     .btn-donate:hover { background: var(--accent-hover); }
 
+    /* SEARCH BAR */
+    .search-wrapper {
+      margin: 2rem 0 1rem 0;
+      text-align: center;
+    }
+    .search-input {
+      width: 100%;
+      max-width: 500px;
+      padding: 0.75rem 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+    .search-input::placeholder {
+      color: var(--muted);
+    }
+
     /* IMPRINT SECTIONS */
-    .imprint-section { margin-top: 3rem; }
+    .imprint-section { margin-top: 2.5rem; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
       padding-bottom: 0.5rem;
@@ -180,6 +204,10 @@
         Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
       </p>
       <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" class="btn-donate">✝ Support the Mission</a>
+      
+      <div class="search-wrapper">
+        <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" />
+      </div>
     </header>
 
     <main>
@@ -219,26 +247,61 @@
     <footer>
       <p>© Cyril & Methodius Media · CC0 Public Domain · All freely given for AMDG</p>
       <p style="margin-top: 0.5rem;">
-        <a href="mailto:hello@methodiusmedia.com">Contact & Prayer Requests</a>
+        <a href="mailto:hello@methodius.media">Contact & Prayer Requests</a>
       </p>
     </footer>
   </div>
 
   <script>
-    // UPDATE ITEM IDENTIFIER HERE
     const ITEM_ID = "cyril-and-methodius-media-v2";
     const BASE_URL = `https://archive.org/download/${ITEM_ID}`;
 
-    // Update lossless nav link dynamically
     document.getElementById('nav-lossless-link').href = BASE_URL;
 
-    // IMPRINT SYMBOL MAP
     const IMPRINT_SYMBOLS = {
       "catholic-lofi": "⁜",
       "chapel-pop": "✟",
       "chapel-ambient": "☩",
       "pious-piano": "☨"
     };
+
+    // INSTANT CLIENT-SIDE SEARCH FILTER
+    function filterMusic() {
+      const query = document.getElementById('site-search').value.toLowerCase().trim();
+
+      document.querySelectorAll('.album-accordion').forEach(accordion => {
+        const albumTitle = accordion.querySelector('.album-title').textContent.toLowerCase();
+        const tracks = accordion.querySelectorAll('.track-row');
+        let hasMatch = albumTitle.includes(query);
+
+        tracks.forEach(track => {
+          const trackTitle = track.querySelector('.track-title').textContent.toLowerCase();
+          if (trackTitle.includes(query) || albumTitle.includes(query)) {
+            track.style.display = 'flex';
+            hasMatch = true;
+          } else {
+            track.style.display = 'none';
+          }
+        });
+
+        if (hasMatch) {
+          accordion.style.display = 'block';
+          if (query.length > 0) accordion.open = true;
+        } else {
+          accordion.style.display = 'none';
+        }
+      });
+
+      // Hide empty imprint sections when filtering
+      document.querySelectorAll('.imprint-section').forEach(section => {
+        if (query.length === 0) {
+          section.style.display = 'block';
+        } else {
+          const visibleAlbums = section.querySelectorAll('.album-accordion[style*="display: block"]');
+          section.style.display = visibleAlbums.length > 0 ? 'block' : 'none';
+        }
+      });
+    }
 
     // FORCE DIRECT MP3 DOWNLOAD VIA BLOB
     async function triggerDirectDownload(e) {
