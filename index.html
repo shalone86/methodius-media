@@ -207,6 +207,7 @@
       border-radius: 6px;
       margin-bottom: 1rem;
       overflow: hidden;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .album-summary {
       padding: 1rem;
@@ -229,7 +230,7 @@
     }
     .album-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 
-    .btn-zip, .btn-artist-donate {
+    .btn-zip, .btn-artist-donate, .btn-album-share {
       background: transparent;
       border: 1px solid var(--accent);
       color: var(--accent);
@@ -239,8 +240,9 @@
       border-radius: 4px;
       transition: all 0.2s;
       font-family: var(--font-sans);
+      cursor: pointer;
     }
-    .btn-zip:hover, .btn-artist-donate:hover { background: var(--accent); color: #000; }
+    .btn-zip:hover, .btn-artist-donate:hover, .btn-album-share:hover { background: var(--accent); color: #000; }
 
     /* TRACK ROWS & BADGES */
     .track-list {
@@ -259,7 +261,7 @@
       padding: 0.5rem 0.5rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: 4px;
-      transition: background 0.3s ease;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .track-row:last-child { border-bottom: none; }
     .track-info { flex: 1 1 200px; display: flex; align-items: center; gap: 0.5rem; }
@@ -283,7 +285,7 @@
     .track-controls { display: flex; align-items: center; gap: 0.75rem; flex: 2 1 300px; }
     audio { width: 100%; height: 36px; border-radius: 4px; }
     
-    .btn-download {
+    .btn-download, .btn-share {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--muted);
@@ -295,7 +297,7 @@
       font-family: var(--font-sans);
       transition: all 0.2s;
     }
-    .btn-download:hover { border-color: var(--text); color: var(--text); }
+    .btn-download:hover, .btn-share:hover { border-color: var(--text); color: var(--text); }
 
     /* FLOATING NOW PLAYING BAR */
     .now-playing-bar {
@@ -586,6 +588,61 @@
       "pious-piano": "☨"
     };
 
+    function slugify(text) {
+      return text.toString().toLowerCase().trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-');
+    }
+
+    function shareLink(hash, btn) {
+      const shareUrl = `${window.location.origin}${window.location.pathname}${hash}`;
+      history.pushState(null, null, hash);
+      
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = "Copied!";
+        setTimeout(() => { btn.textContent = originalText; }, 1800);
+      }).catch(() => {
+        prompt("Copy direct link:", shareUrl);
+      });
+    }
+
+    function handleDeepLink() {
+      const hash = window.location.hash;
+      if (!hash) return;
+
+      const targetId = hash.replace('#', '');
+      const targetEl = document.getElementById(targetId);
+
+      if (targetEl) {
+        setTimeout(() => {
+          if (targetEl.classList.contains('album-accordion')) {
+            targetEl.open = true;
+          } else {
+            const parentAccordion = targetEl.closest('.album-accordion');
+            if (parentAccordion) parentAccordion.open = true;
+          }
+
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.style.borderColor = 'var(--accent)';
+          targetEl.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.4)';
+          setTimeout(() => {
+            targetEl.style.borderColor = '';
+            targetEl.style.boxShadow = '';
+          }, 3000);
+
+          const audioEl = targetEl.querySelector('audio');
+          if (audioEl) {
+            const trackObj = globalTrackPool.find(t => t.audioElement === audioEl);
+            if (trackObj && activeAudioEl !== audioEl) {
+              playTrackByObj(trackObj);
+            }
+          }
+        }, 300);
+      }
+    }
+
     function toggleModal(show) {
       document.getElementById('permission-modal').style.display = show ? 'flex' : 'none';
     }
@@ -688,7 +745,7 @@
 
       currentShufflePool = sectionPool;
       isShuffleActive = true;
-      playRandomTrack(currentShufflePool);
+      playRandomTrack(sectionPool);
     }
 
     function playRandomTrack(pool) {
@@ -906,15 +963,18 @@
             albumData.tracks.sort((a, b) => a.trackNum - b.trackNum);
 
             const details = document.createElement('details');
+            const albumSlug = slugify(albumName);
+            details.id = `album-${albumSlug}`;
+
             details.className = 'album-accordion';
             details.setAttribute('name', 'album-accordion-group');
-details.addEventListener('toggle', () => {
-  if (details.open) {
-    document.querySelectorAll('.album-accordion').forEach(other => {
-      if (other !== details) other.open = false;
-    });
-  }
-});
+            details.addEventListener('toggle', () => {
+              if (details.open) {
+                document.querySelectorAll('.album-accordion').forEach(other => {
+                  if (other !== details) other.open = false;
+                });
+              }
+            });
             if (index === 0) details.open = true;
 
             const actionsDiv = document.createElement('div');
@@ -934,12 +994,23 @@ details.addEventListener('toggle', () => {
               loadDonateInfo(albumData.donateTxtUrl, actionsDiv);
             }
 
+            const albumShareBtn = document.createElement('button');
+            albumShareBtn.className = 'btn-album-share';
+            albumShareBtn.textContent = '🔗 Share Album';
+            albumShareBtn.onclick = (e) => {
+              e.stopPropagation();
+              shareLink(`#album-${albumSlug}`, albumShareBtn);
+            };
+            actionsDiv.appendChild(albumShareBtn);
+
             const trackListEl = document.createElement('div');
             trackListEl.className = 'track-list';
 
             albumData.tracks.forEach(track => {
               const row = document.createElement('div');
               row.className = 'track-row';
+              const trackSlug = slugify(`${albumName}-${track.title}`);
+              row.id = `track-${trackSlug}`;
 
               const tagHtml = track.tag ? `<span class="track-tag-badge">${track.tag}</span>` : '';
 
@@ -956,6 +1027,7 @@ details.addEventListener('toggle', () => {
                           data-url="${track.url}" 
                           data-filename="${track.title}.mp3" 
                           onclick="triggerDirectDownload(event)">↓ MP3</button>
+                  <button class="btn-share" onclick="shareLink('#track-${trackSlug}', this)">🔗 Share</button>
                 </div>
               `;
 
@@ -979,6 +1051,7 @@ details.addEventListener('toggle', () => {
                 currentTrackIndex = globalTrackPool.indexOf(trackObj);
                 updateNowPlayingBar(trackObj);
                 document.getElementById('btn-np-toggle').textContent = "⏸";
+                history.replaceState(null, null, `#track-${trackSlug}`);
               });
 
               audioEl.addEventListener('pause', () => {
@@ -1022,6 +1095,7 @@ details.addEventListener('toggle', () => {
         });
 
         setupContinuousPlayback();
+        handleDeepLink();
 
       } catch (err) {
         console.error("Error fetching tracks from Cloudflare R2:", err);
@@ -1039,6 +1113,8 @@ details.addEventListener('toggle', () => {
         playNextTrack();
       }, true);
     }
+
+    window.addEventListener('hashchange', handleDeepLink);
 
     loadMusic();
   </script>
