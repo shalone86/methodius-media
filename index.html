@@ -138,9 +138,30 @@
       border-bottom: 2px solid var(--accent);
       padding-bottom: 0.5rem;
       margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
-    .imprint-header h2 { font-size: 1.4rem; color: var(--accent); }
+    .imprint-header-text h2 { font-size: 1.4rem; color: var(--accent); }
     .imprint-subtitle { font-size: 0.9rem; color: var(--muted); font-style: italic; display: block; margin-top: 0.25rem; }
+
+    .btn-section-shuffle {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.25rem 0.65rem;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-section-shuffle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
 
     /* ACCORDION ALBUMS */
     .album-accordion {
@@ -278,12 +299,11 @@
 
   <!-- STICKY NAV -->
   <nav class="sticky-nav">
-    <a href="#catholic-lofi">Catholic Lofi</a>
-    <a href="#chapel-pop">Chapel Pop</a>
-    <a href="#chapel-ambient">Chapel Ambient</a>
-    <a href="#pious-piano">Pious Piano</a>
-    <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle Radio</a>
-    <a id="nav-lossless-link" href="#" target="_blank" rel="noopener">Lossless Archive</a>
+    <a href="#catholic-lofi">Lofi</a>
+    <a href="#chapel-pop">Pop</a>
+    <a href="#chapel-ambient">Ambient</a>
+    <a href="#pious-piano">Piano</a>
+    <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle</a>
     <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
   </nav>
 
@@ -306,32 +326,44 @@
     <main>
       <section class="imprint-section" id="catholic-lofi">
         <div class="imprint-header">
-          <h2>Catholic Lofi</h2>
-          <span class="imprint-subtitle">Ambient beats for prayer and study</span>
+          <div class="imprint-header-text">
+            <h2>Catholic Lofi</h2>
+            <span class="imprint-subtitle">Ambient beats for prayer and study</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('catholic-lofi')">🔀 Shuffle Lofi</button>
         </div>
         <div class="albums-container" id="container-catholic-lofi"></div>
       </section>
 
       <section class="imprint-section" id="chapel-pop">
         <div class="imprint-header">
-          <h2>Chapel Pop</h2>
-          <span class="imprint-subtitle">Electronic dance music and prayer for focus and energy</span>
+          <div class="imprint-header-text">
+            <h2>Chapel Pop</h2>
+            <span class="imprint-subtitle">Electronic dance music and prayer for focus and energy</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-pop')">🔀 Shuffle Pop</button>
         </div>
         <div class="albums-container" id="container-chapel-pop"></div>
       </section>
 
       <section class="imprint-section" id="chapel-ambient">
         <div class="imprint-header">
-          <h2>Chapel Ambient</h2>
-          <span class="imprint-subtitle">Deep meditative atmospheric soundscapes</span>
+          <div class="imprint-header-text">
+            <h2>Chapel Ambient</h2>
+            <span class="imprint-subtitle">Deep meditative atmospheric soundscapes</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-ambient')">🔀 Shuffle Ambient</button>
         </div>
         <div class="albums-container" id="container-chapel-ambient"></div>
       </section>
 
       <section class="imprint-section" id="pious-piano">
         <div class="imprint-header">
-          <h2>Pious Piano</h2>
-          <span class="imprint-subtitle">Piano preludes with prayer for relaxation and peace</span>
+          <div class="imprint-header-text">
+            <h2>Pious Piano</h2>
+            <span class="imprint-subtitle">Piano preludes with prayer for relaxation and peace</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('pious-piano')">🔀 Shuffle Piano</button>
         </div>
         <div class="albums-container" id="container-pious-piano"></div>
       </section>
@@ -363,8 +395,6 @@
   <script>
     const ITEM_ID = "cyril-and-methodius-media-v2";
     const BASE_URL = `https://archive.org/download/${ITEM_ID}`;
-
-    document.getElementById('nav-lossless-link').href = BASE_URL;
 
     let globalTrackPool = [];
     let isShuffleActive = false;
@@ -446,20 +476,29 @@
       }
     }
 
-    // SHUFFLE RADIO ENGINE
+    // GLOBAL SHUFFLE ENGINE
     function triggerShuffle(e) {
       if (e) e.preventDefault();
       if (globalTrackPool.length === 0) return;
       
       isShuffleActive = true;
-      playRandomTrack();
+      playRandomTrack(globalTrackPool);
     }
 
-    function playRandomTrack() {
-      if (globalTrackPool.length === 0) return;
+    // SECTION-SPECIFIC SHUFFLE ENGINE
+    function triggerSectionShuffle(imprintKey) {
+      const sectionPool = globalTrackPool.filter(track => track.imprintKey === imprintKey);
+      if (sectionPool.length === 0) return;
 
-      const randomIndex = Math.floor(Math.random() * globalTrackPool.length);
-      const track = globalTrackPool[randomIndex];
+      isShuffleActive = true;
+      playRandomTrack(sectionPool);
+    }
+
+    function playRandomTrack(pool) {
+      if (!pool || pool.length === 0) return;
+
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      const track = pool[randomIndex];
 
       document.querySelectorAll('audio').forEach(a => a.pause());
 
@@ -615,6 +654,7 @@
               globalTrackPool.push({
                 title: track.title,
                 url: track.url,
+                imprintKey: imprintKey,
                 audioElement: audioEl,
                 accordion: details,
                 rowElement: row
@@ -658,7 +698,7 @@
 
       document.addEventListener('ended', (e) => {
         if (isShuffleActive) {
-          playRandomTrack();
+          playRandomTrack(globalTrackPool);
           return;
         }
 
