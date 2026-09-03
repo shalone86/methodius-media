@@ -1,450 +1,984 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Methodius Media</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Cyril & Methodius Media — Sacred Sound. Open Source.</title>
+  <meta name="description" content="Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 Public Domain for AMDG." />
+  <link rel="canonical" href="https://methodius.media/" />
+
+  <meta property="og:url" content="https://methodius.media/" />
+  <meta property="og:title" content="Cyril & Methodius Media — Sacred Sound. Open Source." />
+  <meta property="og:description" content="Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 Public Domain for AMDG." />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <style>
     :root {
-      --bg: #121212;
-      --card-bg: #1e1e1e;
+      --bg: #121214;
+      --card-bg: #1b1b1e;
+      --border: #2e2e34;
+      --text: #e4e4e7;
+      --muted: #a1a1aa;
       --accent: #d4af37;
       --accent-hover: #f1c40f;
-      --text: #ffffff;
-      --text-muted: #a0a0a0;
-      --player-bg: #181818;
-      --border: #282828;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
       color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 5.5rem;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
-      padding-bottom: 90px;
     }
 
-    /* Navigation Header */
-    header {
-      background: #161616;
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    /* STICKY NAV */
+    .sticky-nav {
       position: sticky;
       top: 0;
-      z-index: 900;
-    }
-
-    .brand {
-      font-size: 1.25rem;
-      font-weight: bold;
-      color: var(--accent);
-      text-decoration: none;
-      letter-spacing: 0.5px;
-    }
-
-    nav ul {
+      z-index: 100;
+      background: rgba(18, 18, 20, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1rem;
       display: flex;
-      list-style: none;
-      gap: 1.5rem;
+      justify-content: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      align-items: center;
     }
-
-    nav a {
-      color: var(--text-muted);
+    .sticky-nav a {
+      color: var(--muted);
       text-decoration: none;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 500;
       transition: color 0.2s;
     }
+    .sticky-nav a:hover { color: var(--accent); }
 
-    nav a:hover { color: var(--text); }
-
-    /* Main Container */
     .container {
-      max-width: 960px;
-      margin: 2rem auto;
-      padding: 0 1.5rem;
-      flex: 1;
+      max-width: 850px;
+      margin: 0 auto;
+      padding: 0 1rem;
       width: 100%;
+      flex: 1;
     }
 
-    /* Album Cards */
-    .album-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
+    /* HEADER & HERO */
+    header {
+      padding: 3rem 0 1.5rem 0;
+      text-align: center;
     }
-
-    .album-header {
+    .site-title { font-size: 2rem; color: var(--accent); margin-bottom: 0.75rem; letter-spacing: 0.03em; }
+    .hero-mission { color: var(--text); font-size: 1.05rem; max-width: 720px; margin: 0 auto 1.5rem auto; line-height: 1.7; }
+    
+    .hero-actions {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.2rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0.8rem;
-      flex-wrap: wrap;
       gap: 1rem;
-    }
-
-    .album-meta-title {
-      font-size: 1.3rem;
-      color: var(--accent);
-      font-weight: 600;
-    }
-
-    .imprint-tag {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 0.2rem;
-    }
-
-    .action-group {
-      display: flex;
-      gap: 0.5rem;
+      justify-content: center;
       align-items: center;
+      flex-wrap: wrap;
     }
 
-    .btn {
-      background: #2a2a2a;
-      color: var(--text);
-      text-decoration: none;
-      padding: 0.4rem 0.8rem;
+    .btn-shuffle {
+      background: var(--accent);
+      color: #000;
+      padding: 0.7rem 1.6rem;
+      font-weight: 600;
+      border: none;
       border-radius: 4px;
-      font-size: 0.8rem;
-      border: 1px solid #444;
       cursor: pointer;
+      font-size: 0.95rem;
       transition: background 0.2s;
     }
-    .btn:hover { background: #333; }
-    .btn-donate { background: #3a2e12; border-color: var(--accent); color: var(--accent); }
-    .btn-donate:hover { background: #4a3b18; }
+    .btn-shuffle:hover { background: var(--accent-hover); }
 
-    /* Track List */
-    .track-list { list-style: none; }
-    
-    .track-item {
+    .btn-donate {
+      display: inline-block;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.7rem 1.6rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .btn-donate:hover { background: var(--accent); color: #000; }
+
+    /* SEARCH BAR */
+    .search-wrapper {
+      margin: 2rem 0 0.5rem 0;
+      text-align: center;
+    }
+    .search-input {
+      width: 100%;
+      max-width: 500px;
+      padding: 0.75rem 1rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    /* IMPRINT SECTIONS */
+    .imprint-section { margin-top: 2.5rem; }
+    .imprint-header {
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .imprint-header-text h2 { font-size: 1.4rem; color: var(--accent); }
+    .imprint-subtitle { font-size: 0.9rem; color: var(--muted); font-style: italic; display: block; margin-top: 0.25rem; }
+
+    .btn-section-shuffle {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.25rem 0.65rem;
+      font-size: 0.85rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-section-shuffle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ACCORDION ALBUMS */
+    .album-accordion {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .album-summary {
+      padding: 1rem;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.7rem 0.6rem;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.15s;
+      list-style: none;
+      user-select: none;
     }
-    .track-item:hover { background: #282828; }
-    .track-item.active { background: #2a2618; color: var(--accent); }
+    .album-summary::-webkit-details-marker { display: none; }
+    .album-title-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .album-symbol { color: var(--accent); font-size: 1.1rem; }
+    .album-title { font-size: 1.05rem; color: var(--text); }
+    .album-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 
-    .track-meta { display: flex; align-items: center; gap: 0.6rem; }
-    .tag-badge {
-      font-size: 0.65rem;
-      padding: 0.15rem 0.4rem;
-      border-radius: 3px;
-      background: #333;
+    .btn-zip, .btn-artist-donate {
+      background: transparent;
+      border: 1px solid var(--accent);
       color: var(--accent);
-      text-transform: uppercase;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.75rem;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: all 0.2s;
     }
+    .btn-zip:hover, .btn-artist-donate:hover { background: var(--accent); color: #000; }
 
-    /* Footer */
-    footer {
-      background: #161616;
+    /* TRACK ROWS & BADGES */
+    .track-list {
+      padding: 0.5rem 1rem 1rem 1rem;
       border-top: 1px solid var(--border);
-      padding: 2rem;
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .track-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      padding: 0.5rem 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+    .track-row:last-child { border-bottom: none; }
+    .track-info { flex: 1 1 200px; display: flex; align-items: center; gap: 0.5rem; }
+    .track-title { font-weight: 500; color: var(--text); font-size: 0.95rem; }
+    .track-tag-badge {
+      font-size: 0.68rem;
+      padding: 0.08rem 0.35rem;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
-    footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+    .track-controls { display: flex; align-items: center; gap: 0.75rem; flex: 2 1 300px; }
+    audio { width: 100%; height: 36px; border-radius: 4px; }
+    
+    .btn-download {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      font-size: 0.75rem;
+      border-radius: 4px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .btn-download:hover { border-color: var(--text); color: var(--text); }
 
-    /* Persistent Player */
-    #player-bar {
+    /* FLOATING NOW PLAYING BAR */
+    .now-playing-bar {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 80px;
-      background: var(--player-bg);
-      border-top: 1px solid var(--border);
-      display: flex;
+      z-index: 200;
+      background: rgba(27, 27, 30, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--accent);
+      padding: 0.6rem 1.2rem;
+      display: none;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem;
-      z-index: 1000;
+      gap: 1.25rem;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
     }
-
-    .player-info { width: 30%; }
-    .player-title { font-weight: 600; font-size: 0.95rem; }
-    .player-album { font-size: 0.8rem; color: var(--text-muted); }
-
-    .player-controls {
+    .np-controls {
       display: flex;
-      flex-direction: column;
       align-items: center;
       gap: 0.4rem;
-      width: 40%;
     }
-
-    .btn-group { display: flex; gap: 1rem; align-items: center; }
-    .ctrl-btn {
-      background: none;
-      border: none;
+    .btn-np {
+      background: transparent;
       color: var(--text);
-      cursor: pointer;
-      font-size: 1.1rem;
-    }
-    .ctrl-btn.play-btn {
-      background: var(--accent);
-      color: #000;
-      width: 36px;
-      height: 36px;
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
+      font-size: 0.85rem;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
+      transition: all 0.2s;
     }
+    .btn-np:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-np-toggle {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-np-toggle:hover { background: var(--accent-hover); }
 
-    .scrubber-container {
+    .np-center-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      overflow: hidden;
+    }
+    .np-meta-row {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      width: 100%;
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      overflow: hidden;
+    }
+    .np-symbol { color: var(--accent); font-size: 1.1rem; }
+    .np-title { font-weight: 600; font-size: 0.88rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-album { font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .np-progress-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .np-time { font-size: 0.72rem; color: var(--muted); font-family: monospace; min-width: 38px; }
+    .np-progress-bg {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .np-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.1s linear;
     }
 
-    .scrubber {
-      flex-grow: 1;
-      height: 4px;
-      accent-color: var(--accent);
+    /* FOOTER & MODAL */
+    footer {
+      text-align: center;
+      border-top: 1px solid var(--border);
+      padding: 2rem 1rem;
+      margin-top: 4rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    footer a { color: var(--muted); text-decoration: underline; }
+    footer a:hover { color: var(--accent); }
+
+    .btn-modal-trigger {
+      background: none;
+      border: none;
+      color: var(--accent);
+      text-decoration: underline;
       cursor: pointer;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      max-width: 500px;
+      width: 100%;
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .btn-modal-close {
+      margin-top: 1.5rem;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--accent);
+      padding: 0.5rem 1.2rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-modal-close:hover {
+      background: var(--accent);
+      color: #000;
     }
   </style>
 </head>
 <body>
 
-  <!-- Menu Header -->
-  <header>
-    <a href="/" class="brand">Methodius Media</a>
-    <nav>
-      <ul>
-        <li><a href="#catalog">Catalog</a></li>
-        <li><a href="https://catholiclofi.com" target="_blank" rel="noopener">Catholic Lofi</a></li>
-        <li><a href="https://dailybeats.com" target="_blank" rel="noopener">Daily Beats</a></li>
-      </ul>
-    </nav>
-  </header>
+  <nav class="sticky-nav">
+    <a href="#catholic-lofi">Lofi</a>
+    <a href="#chapel-pop">Pop</a>
+    <a href="#chapel-ambient">Ambient</a>
+    <a href="#pious-piano">Piano</a>
+    <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle</a>
+    <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
+  </nav>
 
-  <!-- Main Content -->
-  <div class="container" id="catalog-container">
-    <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading music catalog...</p>
+  <div class="container">
+    <header>
+      <h1 class="site-title">✝ Cyril & Methodius Media</h1>
+      <p class="hero-mission">
+        Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
+      </p>
+      <div class="hero-actions">
+        <button class="btn-shuffle" onclick="triggerShuffle(event)">🔀 Start Shuffle Radio</button>
+        <a href="https://donorbox.org/methodius" target="_blank" rel="noopener" class="btn-donate">✝ Support Mission</a>
+      </div>
+      
+      <div class="search-wrapper">
+        <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" />
+      </div>
+    </header>
+
+    <main>
+      <section class="imprint-section" id="catholic-lofi">
+        <div class="imprint-header">
+          <div class="imprint-header-text">
+            <h2>Catholic Lofi</h2>
+            <span class="imprint-subtitle">Ambient beats for prayer and study, featuring gently sung or spoken prayers</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('catholic-lofi')">🔀 Shuffle Lofi</button>
+        </div>
+        <div class="albums-container" id="container-catholic-lofi"></div>
+      </section>
+
+      <section class="imprint-section" id="chapel-pop">
+        <div class="imprint-header">
+          <div class="imprint-header-text">
+            <h2>Chapel Pop</h2>
+            <span class="imprint-subtitle">Electronic dance music and prayer for focus and energy</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-pop')">🔀 Shuffle Pop</button>
+        </div>
+        <div class="albums-container" id="container-chapel-pop"></div>
+      </section>
+
+      <section class="imprint-section" id="chapel-ambient">
+        <div class="imprint-header">
+          <div class="imprint-header-text">
+            <h2>Chapel Ambient</h2>
+            <span class="imprint-subtitle">Deep meditative atmospheric soundscapes</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-ambient')">🔀 Shuffle Ambient</button>
+        </div>
+        <div class="albums-container" id="container-chapel-ambient"></div>
+      </section>
+
+      <section class="imprint-section" id="pious-piano">
+        <div class="imprint-header">
+          <div class="imprint-header-text">
+            <h2>Pious Piano</h2>
+            <span class="imprint-subtitle">Piano preludes with prayer for relaxation and peace</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('pious-piano')">🔀 Shuffle Piano</button>
+        </div>
+        <div class="albums-container" id="container-pious-piano"></div>
+      </section>
+    </main>
+
+    <footer>
+      <p>© Cyril & Methodius Media · CC0 Public Domain · All freely given for AMDG</p>
+      <p style="margin-top: 0.5rem;">
+        All sacred lyrics and liturgical texts strictly adhere to Church-approved verbiage.
+      </p>
+      <p style="margin-top: 0.5rem;">
+        <button class="btn-modal-trigger" onclick="toggleModal(true)">Physical Media & Sharing Permission</button>
+      </p>
+      <p style="margin-top: 0.5rem;">
+        <a href="mailto:hello@methodius.media">Contact & Prayer Requests</a>
+      </p>
+    </footer>
   </div>
 
-  <!-- Footer -->
-  <footer>
-    <p>&copy; Methodius Media. All audio hosted on self-hosted high-speed storage.</p>
-    <p style="margin-top: 0.5rem;">
-      <a href="https://media.methodius.media/catalog.json" target="_blank">Raw JSON Catalog</a>
-    </p>
-  </footer>
-
-  <!-- Persistent Player -->
-  <div id="player-bar">
-    <div class="player-info">
-      <div class="player-title" id="now-playing-title">Select a track</div>
-      <div class="player-album" id="now-playing-album">-</div>
+  <div class="now-playing-bar" id="now-playing-bar">
+    <div class="np-controls">
+      <button class="btn-np" onclick="playPrevTrack()">⏮</button>
+      <button class="btn-np-toggle" id="btn-np-toggle" onclick="toggleNowPlaying()">⏸</button>
+      <button class="btn-np" onclick="playNextTrack()">⏭</button>
     </div>
 
-    <div class="player-controls">
-      <div class="btn-group">
-        <button class="ctrl-btn" id="prev-btn">⏮</button>
-        <button class="ctrl-btn play-btn" id="play-btn">▶</button>
-        <button class="ctrl-btn" id="next-btn">⏭</button>
+    <div class="np-center-info">
+      <div class="np-meta-row">
+        <span class="np-symbol" id="np-symbol">✝</span>
+        <span class="np-title" id="np-title">Track Name</span>
+        <span style="color: var(--border);">·</span>
+        <span class="np-album" id="np-album">Album Name</span>
       </div>
-      <div class="scrubber-container">
-        <span id="current-time">0:00</span>
-        <input type="range" id="scrubber" class="scrubber" value="0" min="0" max="100">
-        <span id="duration-time">0:00</span>
+      <div class="np-progress-row">
+        <span class="np-time" id="np-time-curr">00:00</span>
+        <div class="np-progress-bg" id="np-progress-bg" onclick="seekAudio(event)">
+          <div class="np-progress-fill" id="np-progress-fill"></div>
+        </div>
+        <span class="np-time" id="np-time-dur">00:00</span>
       </div>
     </div>
+  </div>
 
-    <div style="width: 30%;"></div>
+  <div class="modal" id="permission-modal">
+    <div class="modal-content">
+      <h3 style="color: var(--accent); margin-bottom: 1rem;">Explicit Permission Granted</h3>
+      <p>We encourage you to download our music and burn or press it onto CDs, cassette tapes, vinyl, or any physical media of your choice for personal listening and sharing. We give explicit permission for that purpose.</p>
+      <button class="btn-modal-close" onclick="toggleModal(false)">Close</button>
+    </div>
   </div>
 
   <script>
-    const MEDIA_BASE = 'https://media.methodius.media';
+    const MEDIA_BASE = "https://media.methodius.media";
     const CATALOG_URL = `${MEDIA_BASE}/catalog.json`;
 
-    let playlist = [];
-    let currentIndex = -1;
-    const audio = new Audio();
+    let globalTrackPool = [];
+    let currentShufflePool = [];
+    let isShuffleActive = false;
+    let currentTrackIndex = -1;
+    let activeAudioEl = null;
 
-    // DOM Elements
-    const catalogContainer = document.getElementById('catalog-container');
-    const playBtn = document.getElementById('play-btn');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const scrubber = document.getElementById('scrubber');
-    const currentTimeEl = document.getElementById('current-time');
-    const durationTimeEl = document.getElementById('duration-time');
-    const titleEl = document.getElementById('now-playing-title');
-    const albumEl = document.getElementById('now-playing-album');
+    const IMPRINT_SYMBOLS = {
+      "catholic-lofi": "⁜",
+      "chapel-pop": "✟",
+      "chapel-ambient": "☩",
+      "pious-piano": "☨"
+    };
 
-    async function initCatalog() {
-      try {
-        const res = await fetch(CATALOG_URL);
-        const data = await res.json();
-        
-        catalogContainer.innerHTML = '';
-        playlist = [];
-
-        data.forEach((album) => {
-          const albumEl = document.createElement('div');
-          albumEl.className = 'album-card';
-
-          const zipHtml = album.zipUrl 
-            ? `<a href="${MEDIA_BASE}/${encodeURI(album.zipUrl)}" class="btn" download>Download WAV Zip</a>` 
-            : '';
-
-          const donateHtml = album.hasDonate 
-            ? `<a href="${MEDIA_BASE}/${encodeURI(album.imprintFolder + '/' + album.albumName + '/donate.txt')}" target="_blank" class="btn btn-donate">Support</a>` 
-            : '';
-
-          let tracksHtml = '';
-          album.tracks.forEach((track) => {
-            const globalIndex = playlist.length;
-            playlist.push({
-              title: track.title,
-              albumName: album.albumName,
-              tag: track.tag,
-              url: `${MEDIA_BASE}/${encodeURI(track.path)}`
-            });
-
-            const tagHtml = track.tag ? `<span class="tag-badge">${track.tag}</span>` : '';
-
-            tracksHtml += `
-              <li class="track-item" data-index="${globalIndex}">
-                <div class="track-meta">
-                  <span>${track.trackNum !== 999 ? track.trackNum + '.' : ''} ${track.title}</span>
-                  ${tagHtml}
-                </div>
-                <span>▶</span>
-              </li>
-            `;
-          });
-
-          albumEl.innerHTML = `
-            <div class="album-header">
-              <div>
-                <span class="imprint-tag">${album.imprintFolder}</span>
-                <div class="album-meta-title">${album.albumName}</div>
-              </div>
-              <div class="action-group">
-                ${donateHtml}
-                ${zipHtml}
-              </div>
-            </div>
-            <ul class="track-list">${tracksHtml}</ul>
-          `;
-
-          catalogContainer.appendChild(albumEl);
-        });
-
-        // Track click bindings
-        document.querySelectorAll('.track-item').forEach(item => {
-          item.addEventListener('click', () => {
-            const index = parseInt(item.getAttribute('data-index'), 10);
-            loadTrack(index);
-            audio.play();
-          });
-        });
-
-      } catch (err) {
-        catalogContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Error loading catalog. Please check catalog.json or CORS settings.</p>';
-        console.error(err);
-      }
+    function toggleModal(show) {
+      document.getElementById('permission-modal').style.display = show ? 'flex' : 'none';
     }
 
-    function loadTrack(index) {
-      if (index < 0 || index >= playlist.length) return;
-      currentIndex = index;
-      const track = playlist[currentIndex];
+    // CONVERT TEXT TO TITLE CASE
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    }
 
-      audio.src = track.url;
-      titleEl.textContent = track.title;
-      albumEl.textContent = `${track.albumName} ${track.tag ? '[' + track.tag + ']' : ''}`;
+    // FORMAT TIME SECONDS TO MM:SS
+    function formatTime(seconds) {
+      if (isNaN(seconds) || seconds < 0) return "00:00";
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+    }
 
-      document.querySelectorAll('.track-item').forEach((el, idx) => {
-        el.classList.toggle('active', idx === currentIndex);
+    // INSTANT CLIENT-SIDE SEARCH FILTER
+    function filterMusic() {
+      const query = document.getElementById('site-search').value.toLowerCase().trim();
+
+      document.querySelectorAll('.album-accordion').forEach(accordion => {
+        const albumTitle = accordion.querySelector('.album-title').textContent.toLowerCase();
+        const tracks = accordion.querySelectorAll('.track-row');
+        let hasMatch = albumTitle.includes(query);
+
+        tracks.forEach(track => {
+          const trackTitle = track.querySelector('.track-title').textContent.toLowerCase();
+          const trackTag = track.querySelector('.track-tag-badge') ? track.querySelector('.track-tag-badge').textContent.toLowerCase() : '';
+
+          if (trackTitle.includes(query) || trackTag.includes(query) || albumTitle.includes(query)) {
+            track.style.display = 'flex';
+            hasMatch = true;
+          } else {
+            track.style.display = 'none';
+          }
+        });
+
+        if (hasMatch) {
+          accordion.style.display = 'block';
+          if (query.length > 0) accordion.open = true;
+        } else {
+          accordion.style.display = 'none';
+        }
+      });
+
+      document.querySelectorAll('.imprint-section').forEach(section => {
+        if (query.length === 0) {
+          section.style.display = 'block';
+        } else {
+          const visibleAlbums = section.querySelectorAll('.album-accordion[style*="display: block"]');
+          section.style.display = visibleAlbums.length > 0 ? 'block' : 'none';
+        }
       });
     }
 
-    function formatTime(seconds) {
-      if (isNaN(seconds)) return '0:00';
-      const m = Math.floor(seconds / 60);
-      const s = Math.floor(seconds % 60);
-      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    // FORCE DIRECT MP3 DOWNLOAD VIA BLOB
+    async function triggerDirectDownload(e) {
+      e.preventDefault();
+      const btn = e.currentTarget;
+      const url = btn.dataset.url;
+      const filename = btn.dataset.filename;
+      const originalText = btn.textContent;
+
+      btn.textContent = "⏳...";
+
+      try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        window.open(url, '_blank');
+      } finally {
+        btn.textContent = originalText;
+      }
     }
 
-    // Player Events
-    playBtn.addEventListener('click', () => {
-      if (currentIndex === -1 && playlist.length > 0) loadTrack(0);
-      if (audio.paused) {
-        audio.play();
+    // GLOBAL SHUFFLE ENGINE
+    function triggerShuffle(e) {
+      if (e) e.preventDefault();
+      if (globalTrackPool.length === 0) return;
+      
+      currentShufflePool = globalTrackPool;
+      isShuffleActive = true;
+      playRandomTrack(currentShufflePool);
+    }
+
+    // SECTION-SPECIFIC SHUFFLE ENGINE
+    function triggerSectionShuffle(imprintKey) {
+      const sectionPool = globalTrackPool.filter(track => track.imprintKey === imprintKey);
+      if (sectionPool.length === 0) return;
+
+      currentShufflePool = sectionPool;
+      isShuffleActive = true;
+      playRandomTrack(currentShufflePool);
+    }
+
+    function playRandomTrack(pool) {
+      if (!pool || pool.length === 0) return;
+
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      const track = pool[randomIndex];
+      playTrackByObj(track);
+    }
+
+    function playTrackByObj(track) {
+      if (!track) return;
+
+      document.querySelectorAll('audio').forEach(a => a.pause());
+
+      if (track.accordion) {
+        track.accordion.open = true;
+      }
+
+      if (track.rowElement) {
+        track.rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        track.rowElement.style.background = 'rgba(212, 175, 55, 0.2)';
+        setTimeout(() => {
+          track.rowElement.style.background = 'transparent';
+        }, 2500);
+      }
+
+      if (track.audioElement) {
+        track.audioElement.play();
+      }
+    }
+
+    // NEXT & PREVIOUS BUTTON CONTROLS
+    function playNextTrack() {
+      const activePool = isShuffleActive && currentShufflePool.length > 0 ? currentShufflePool : globalTrackPool;
+      if (activePool.length === 0) return;
+
+      if (isShuffleActive) {
+        playRandomTrack(activePool);
       } else {
-        audio.pause();
+        const nextIdx = (currentTrackIndex + 1) % activePool.length;
+        playTrackByObj(activePool[nextIdx]);
       }
-    });
+    }
 
-    prevBtn.addEventListener('click', () => {
-      if (currentIndex > 0) {
-        loadTrack(currentIndex - 1);
-        audio.play();
+    function playPrevTrack() {
+      const activePool = isShuffleActive && currentShufflePool.length > 0 ? currentShufflePool : globalTrackPool;
+      if (activePool.length === 0) return;
+
+      if (isShuffleActive) {
+        playRandomTrack(activePool);
+      } else {
+        const prevIdx = (currentTrackIndex - 1 + activePool.length) % activePool.length;
+        playTrackByObj(activePool[prevIdx]);
       }
-    });
+    }
 
-    nextBtn.addEventListener('click', () => {
-      if (currentIndex < playlist.length - 1) {
-        loadTrack(currentIndex + 1);
-        audio.play();
+    // TOGGLE PLAY/PAUSE
+    function toggleNowPlaying() {
+      if (!activeAudioEl) return;
+      if (activeAudioEl.paused) {
+        activeAudioEl.play();
+      } else {
+        activeAudioEl.pause();
       }
-    });
+    }
 
-    audio.addEventListener('play', () => playBtn.textContent = '⏸');
-    audio.addEventListener('pause', () => playBtn.textContent = '▶');
-    audio.addEventListener('ended', () => {
-      if (currentIndex < playlist.length - 1) {
-        loadTrack(currentIndex + 1);
-        audio.play();
+    // TIME SCRUBBING
+    function seekAudio(e) {
+      if (!activeAudioEl || !activeAudioEl.duration) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      const duration = activeAudioEl.duration;
+
+      activeAudioEl.currentTime = (clickX / width) * duration;
+    }
+
+    // UPDATE NOW PLAYING BAR UI
+    function updateNowPlayingBar(trackObj) {
+      const bar = document.getElementById('now-playing-bar');
+      const symbolEl = document.getElementById('np-symbol');
+      const titleEl = document.getElementById('np-title');
+      const albumEl = document.getElementById('np-album');
+
+      symbolEl.textContent = IMPRINT_SYMBOLS[trackObj.imprintKey] || "✝";
+      titleEl.textContent = trackObj.title;
+      albumEl.textContent = trackObj.albumName;
+
+      bar.style.display = 'flex';
+    }
+
+    // FETCH & PARSE DONATE.TXT FOR ALBUMS
+    async function loadDonateInfo(donateTxtUrl, actionContainerEl) {
+      try {
+        const res = await fetch(donateTxtUrl);
+        if (!res.ok) return;
+        const text = await res.text();
+        const lines = text.trim().split('\n');
+        
+        if (lines.length >= 2) {
+          const artist = lines[0].trim();
+          const url = lines[1].trim();
+          
+          const donateLink = document.createElement('a');
+          donateLink.className = 'btn-artist-donate';
+          donateLink.href = url;
+          donateLink.target = '_blank';
+          donateLink.rel = 'noopener';
+          donateLink.textContent = `☕ Support ${artist}`;
+          donateLink.onclick = (e) => e.stopPropagation();
+
+          actionContainerEl.appendChild(donateLink);
+        }
+      } catch (e) {
+        // Skip if missing
       }
-    });
+    }
 
-    audio.addEventListener('timeupdate', () => {
-      if (!isNaN(audio.duration)) {
-        scrubber.value = (audio.currentTime / audio.duration) * 100;
-        currentTimeEl.textContent = formatTime(audio.currentTime);
-        durationTimeEl.textContent = formatTime(audio.duration);
+    // PARSE TAGS, CLEAN LEADING NUMBERS & FORMAT TITLE CASE
+    function parseTrackTitleAndTag(rawTitle, rawFileName) {
+      let title = rawTitle;
+      let rawTrackNum = null;
+
+      const numMatch = rawFileName.match(/^(\d+)[-_.\s]+/);
+      if (numMatch) {
+        rawTrackNum = parseInt(numMatch[1], 10);
       }
-    });
 
-    scrubber.addEventListener('input', () => {
-      if (!isNaN(audio.duration)) {
-        audio.currentTime = (scrubber.value / 100) * audio.duration;
+      if (!title) {
+        title = rawFileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").replace(/_vbr$/i, "");
+        title = title.replace(/^\d+[\s.-]*/, "");
+        title = title.replace(/\b\d{1,2}\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{2,4}\b/gi, "");
+        title = title.replace(/\b\d{4}[-_.]\d{2}[-_.]\d{2}\b/gi, "");
+        title = toTitleCase(title);
+      } else {
+        title = title.replace(/^\d+[\s.-]*/, "");
+        title = title.replace(/\b\d{1,2}\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{2,4}\b/gi, "");
+        title = title.replace(/\b\d{4}[-_.]\d{2}[-_.]\d{2}\b/gi, "");
       }
-    });
 
-    initCatalog();
+      let tag = "";
+      if (/\[spoken\]|\(spoken\)/i.test(title) || /\[spoken\]|\(spoken\)/i.test(rawFileName)) {
+        tag = "Spoken";
+        title = title.replace(/\[spoken\]|\(spoken\)/gi, "");
+      } else if (/\[sung\]|\(sung\)/i.test(title) || /\[sung\]|\(sung\)/i.test(rawFileName)) {
+        tag = "Sung";
+        title = title.replace(/\[sung\]|\(sung\)/gi, "");
+      }
+
+      title = title.replace(/\s+/g, " ").trim();
+
+      return { cleanTitle: title, tag: tag, rawTrackNum: rawTrackNum };
+    }
+
+    async function loadMusic() {
+      try {
+        const response = await fetch(CATALOG_URL);
+        const catalogData = await response.json();
+
+        const imprints = {
+          "catholic-lofi": {},
+          "chapel-pop": {},
+          "chapel-ambient": {},
+          "pious-piano": {}
+        };
+
+        catalogData.forEach(album => {
+          const imprintFolder = (album.imprintFolder || "").toLowerCase().trim();
+          const albumName = album.albumName;
+
+          let targetImprintKey = "";
+          if (imprintFolder.includes("lofi")) targetImprintKey = "catholic-lofi";
+          else if (imprintFolder.includes("pop")) targetImprintKey = "chapel-pop";
+          else if (imprintFolder.includes("ambient")) targetImprintKey = "chapel-ambient";
+          else if (imprintFolder.includes("piano")) targetImprintKey = "pious-piano";
+
+          if (!targetImprintKey) return;
+
+          if (!imprints[targetImprintKey][albumName]) {
+            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null };
+          }
+
+          if (album.zipUrl) {
+            imprints[targetImprintKey][albumName].zipUrl = `${MEDIA_BASE}/${encodeURI(album.zipUrl)}`;
+          }
+
+          if (album.hasDonate) {
+            imprints[targetImprintKey][albumName].donateTxtUrl = `${MEDIA_BASE}/${encodeURI(album.imprintFolder)}/${encodeURI(albumName)}/donate.txt`;
+          }
+
+          if (album.tracks && album.tracks.length > 0) {
+            album.tracks.forEach(t => {
+              const fileUrl = `${MEDIA_BASE}/${encodeURI(t.path)}`;
+              imprints[targetImprintKey][albumName].tracks.push({
+                title: t.title,
+                tag: t.tag || "",
+                trackNum: t.trackNum || 999,
+                url: fileUrl
+              });
+            });
+          }
+        });
+
+        Object.keys(imprints).forEach(imprintKey => {
+          const container = document.getElementById(`container-${imprintKey}`);
+          const albums = imprints[imprintKey];
+          const symbol = IMPRINT_SYMBOLS[imprintKey] || "✦";
+
+          Object.keys(albums).forEach((albumName, index) => {
+            const albumData = albums[albumName];
+            if (albumData.tracks.length === 0 && !albumData.zipUrl) return;
+
+            // Sort tracks numerically by track number
+            albumData.tracks.sort((a, b) => a.trackNum - b.trackNum);
+
+            const details = document.createElement('details');
+            details.className = 'album-accordion';
+            if (index === 0) details.open = true;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'album-actions';
+
+            if (albumData.zipUrl) {
+              const zipBtn = document.createElement('a');
+              zipBtn.className = 'btn-zip';
+              zipBtn.href = albumData.zipUrl;
+              zipBtn.download = '';
+              zipBtn.textContent = '↓ Full Album (WAV ZIP)';
+              zipBtn.onclick = (e) => e.stopPropagation();
+              actionsDiv.appendChild(zipBtn);
+            }
+
+            if (albumData.donateTxtUrl) {
+              loadDonateInfo(albumData.donateTxtUrl, actionsDiv);
+            }
+
+            const trackListEl = document.createElement('div');
+            trackListEl.className = 'track-list';
+
+            albumData.tracks.forEach(track => {
+              const row = document.createElement('div');
+              row.className = 'track-row';
+
+              const tagHtml = track.tag ? `<span class="track-tag-badge">${track.tag}</span>` : '';
+
+              row.innerHTML = `
+                <div class="track-info">
+                  <span class="track-title">${track.title}</span>
+                  ${tagHtml}
+                </div>
+                <div class="track-controls">
+                  <audio controls preload="none">
+                    <source src="${track.url}" type="audio/mpeg">
+                  </audio>
+                  <button class="btn-download" 
+                          data-url="${track.url}" 
+                          data-filename="${track.title}.mp3" 
+                          onclick="triggerDirectDownload(event)">↓ MP3</button>
+                </div>
+              `;
+
+              const audioEl = row.querySelector('audio');
+
+              const trackObj = {
+                title: track.title,
+                albumName: albumName,
+                url: track.url,
+                imprintKey: imprintKey,
+                audioElement: audioEl,
+                accordion: details,
+                rowElement: row
+              };
+
+              globalTrackPool.push(trackObj);
+
+              // Audio State Change Event Listeners
+              audioEl.addEventListener('play', () => {
+                activeAudioEl = audioEl;
+                currentTrackIndex = globalTrackPool.indexOf(trackObj);
+                updateNowPlayingBar(trackObj);
+                document.getElementById('btn-np-toggle').textContent = "⏸";
+              });
+
+              audioEl.addEventListener('pause', () => {
+                if (activeAudioEl === audioEl) {
+                  document.getElementById('btn-np-toggle').textContent = "▶";
+                }
+              });
+
+              audioEl.addEventListener('timeupdate', () => {
+                if (activeAudioEl === audioEl) {
+                  const curr = audioEl.currentTime;
+                  const dur = audioEl.duration || 0;
+                  document.getElementById('np-time-curr').textContent = formatTime(curr);
+                  document.getElementById('np-time-dur').textContent = formatTime(dur);
+                  
+                  const pct = dur > 0 ? (curr / dur) * 100 : 0;
+                  document.getElementById('np-progress-fill').style.width = `${pct}%`;
+                }
+              });
+
+              trackListEl.appendChild(row);
+            });
+
+            const summaryEl = document.createElement('summary');
+            summaryEl.className = 'album-summary';
+            
+            const titleWrap = document.createElement('div');
+            titleWrap.className = 'album-title-wrap';
+            titleWrap.innerHTML = `
+              <span class="album-symbol">${symbol}</span>
+              <span class="album-title">${albumName}</span>
+            `;
+
+            summaryEl.appendChild(titleWrap);
+            summaryEl.appendChild(actionsDiv);
+
+            details.appendChild(summaryEl);
+            details.appendChild(trackListEl);
+            container.appendChild(details);
+          });
+        });
+
+        setupContinuousPlayback();
+
+      } catch (err) {
+        console.error("Error fetching tracks from Cloudflare R2:", err);
+      }
+    }
+
+    function setupContinuousPlayback() {
+      document.addEventListener('play', (e) => {
+        document.querySelectorAll('audio').forEach(audio => {
+          if (audio !== e.target) audio.pause();
+        });
+      }, true);
+
+      document.addEventListener('ended', (e) => {
+        playNextTrack();
+      }, true);
+    }
+
+    loadMusic();
   </script>
 </body>
 </html>
