@@ -14,6 +14,12 @@
   <meta property="og:type" content="website" />
 
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Google Fonts for Liturgical / Classical Serif Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --bg: #121214;
@@ -23,11 +29,14 @@
       --muted: #a1a1aa;
       --accent: #d4af37;
       --accent-hover: #f1c40f;
+      --font-heading: 'Cinzel', Georgia, serif;
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--font-sans);
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.6;
@@ -51,6 +60,7 @@
       gap: 1.25rem;
       flex-wrap: wrap;
       align-items: center;
+      font-family: var(--font-sans);
     }
     .sticky-nav a {
       color: var(--muted);
@@ -74,8 +84,21 @@
       padding: 3rem 0 1.5rem 0;
       text-align: center;
     }
-    .site-title { font-size: 2rem; color: var(--accent); margin-bottom: 0.75rem; letter-spacing: 0.03em; }
-    .hero-mission { color: var(--text); font-size: 1.05rem; max-width: 720px; margin: 0 auto 1.5rem auto; line-height: 1.7; }
+    .site-title { 
+      font-family: var(--font-heading);
+      font-size: 2.1rem; 
+      color: var(--accent); 
+      margin-bottom: 0.75rem; 
+      letter-spacing: 0.04em; 
+    }
+    .hero-mission { 
+      font-family: var(--font-serif);
+      color: var(--text); 
+      font-size: 1.15rem; 
+      max-width: 720px; 
+      margin: 0 auto 1.5rem auto; 
+      line-height: 1.7; 
+    }
     
     .hero-actions {
       display: flex;
@@ -95,6 +118,7 @@
       cursor: pointer;
       font-size: 0.95rem;
       transition: background 0.2s;
+      font-family: var(--font-sans);
     }
     .btn-shuffle:hover { background: var(--accent-hover); }
 
@@ -108,6 +132,7 @@
       text-decoration: none;
       border-radius: 4px;
       transition: all 0.2s;
+      font-family: var(--font-sans);
     }
     .btn-donate:hover { background: var(--accent); color: #000; }
 
@@ -127,6 +152,7 @@
       font-size: 0.95rem;
       outline: none;
       transition: border-color 0.2s;
+      font-family: var(--font-sans);
     }
     .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--muted); }
@@ -143,8 +169,20 @@
       flex-wrap: wrap;
       gap: 0.5rem;
     }
-    .imprint-header-text h2 { font-size: 1.4rem; color: var(--accent); }
-    .imprint-subtitle { font-size: 0.9rem; color: var(--muted); font-style: italic; display: block; margin-top: 0.25rem; }
+    .imprint-header-text h2 { 
+      font-family: var(--font-heading);
+      font-size: 1.45rem; 
+      color: var(--accent); 
+      letter-spacing: 0.03em;
+    }
+    .imprint-subtitle { 
+      font-family: var(--font-serif);
+      font-size: 1rem; 
+      color: var(--muted); 
+      font-style: italic; 
+      display: block; 
+      margin-top: 0.25rem; 
+    }
 
     .btn-section-shuffle {
       background: transparent;
@@ -154,7 +192,7 @@
       font-size: 0.85rem;
       border-radius: 4px;
       cursor: pointer;
-      font-family: inherit;
+      font-family: var(--font-sans);
       transition: all 0.2s;
     }
     .btn-section-shuffle:hover {
@@ -183,7 +221,12 @@
     .album-summary::-webkit-details-marker { display: none; }
     .album-title-wrap { display: flex; align-items: center; gap: 0.5rem; }
     .album-symbol { color: var(--accent); font-size: 1.1rem; }
-    .album-title { font-size: 1.05rem; color: var(--text); }
+    .album-title { 
+      font-family: var(--font-serif);
+      font-size: 1.2rem; 
+      color: var(--text); 
+      font-weight: 600;
+    }
     .album-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 
     .btn-zip, .btn-artist-donate {
@@ -195,6 +238,7 @@
       text-decoration: none;
       border-radius: 4px;
       transition: all 0.2s;
+      font-family: var(--font-sans);
     }
     .btn-zip:hover, .btn-artist-donate:hover { background: var(--accent); color: #000; }
 
@@ -219,7 +263,12 @@
     }
     .track-row:last-child { border-bottom: none; }
     .track-info { flex: 1 1 200px; display: flex; align-items: center; gap: 0.5rem; }
-    .track-title { font-weight: 500; color: var(--text); font-size: 0.95rem; }
+    .track-title { 
+      font-family: var(--font-sans);
+      font-weight: 500; 
+      color: var(--text); 
+      font-size: 0.95rem; 
+    }
     .track-tag-badge {
       font-size: 0.68rem;
       padding: 0.08rem 0.35rem;
@@ -228,6 +277,7 @@
       color: var(--muted);
       text-transform: uppercase;
       letter-spacing: 0.03em;
+      font-family: var(--font-sans);
     }
 
     .track-controls { display: flex; align-items: center; gap: 0.75rem; flex: 2 1 300px; }
@@ -242,7 +292,7 @@
       border-radius: 4px;
       white-space: nowrap;
       cursor: pointer;
-      font-family: inherit;
+      font-family: var(--font-sans);
       transition: all 0.2s;
     }
     .btn-download:hover { border-color: var(--text); color: var(--text); }
@@ -262,6 +312,7 @@
       align-items: center;
       gap: 1.25rem;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+      font-family: var(--font-sans);
     }
     .np-controls {
       display: flex;
@@ -347,6 +398,7 @@
       margin-top: 4rem;
       color: var(--muted);
       font-size: 0.85rem;
+      font-family: var(--font-sans);
     }
     footer a { color: var(--muted); text-decoration: underline; }
     footer a:hover { color: var(--accent); }
@@ -359,6 +411,7 @@
       cursor: pointer;
       font-size: 0.85rem;
       margin-top: 0.5rem;
+      font-family: var(--font-sans);
     }
 
     .modal {
@@ -370,6 +423,7 @@
       justify-content: center;
       padding: 1rem;
       z-index: 1000;
+      font-family: var(--font-sans);
     }
     .modal-content {
       background: var(--card-bg);
@@ -509,7 +563,7 @@
 
   <div class="modal" id="permission-modal">
     <div class="modal-content">
-      <h3 style="color: var(--accent); margin-bottom: 1rem;">Explicit Permission Granted</h3>
+      <h3 style="color: var(--accent); margin-bottom: 1rem; font-family: var(--font-heading);">Explicit Permission Granted</h3>
       <p>We encourage you to download our music and burn or press it onto CDs, cassette tapes, vinyl, or any physical media of your choice for personal listening and sharing. We give explicit permission for that purpose.</p>
       <button class="btn-modal-close" onclick="toggleModal(false)">Close</button>
     </div>
