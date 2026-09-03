@@ -8,7 +8,6 @@
   <meta name="description" content="Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 Public Domain for AMDG." />
   <link rel="canonical" href="https://methodius.media/" />
 
-  <!-- Open Graph -->
   <meta property="og:url" content="https://methodius.media/" />
   <meta property="og:title" content="Cyril & Methodius Media — Sacred Sound. Open Source." />
   <meta property="og:description" content="Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 Public Domain for AMDG." />
@@ -199,7 +198,7 @@
     }
     .btn-zip:hover, .btn-artist-donate:hover { background: var(--accent); color: #000; }
 
-    /* TRACK ROWS */
+    /* TRACK ROWS & SUBTLE BADGES */
     .track-list {
       padding: 0.5rem 1rem 1rem 1rem;
       border-top: 1px solid var(--border);
@@ -219,8 +218,18 @@
       transition: background 0.3s ease;
     }
     .track-row:last-child { border-bottom: none; }
-    .track-info { flex: 1 1 200px; }
+    .track-info { flex: 1 1 200px; display: flex; align-items: center; gap: 0.5rem; }
     .track-title { font-weight: 500; color: var(--text); font-size: 0.95rem; }
+    .track-tag-badge {
+      font-size: 0.68rem;
+      padding: 0.08rem 0.35rem;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
     .track-controls { display: flex; align-items: center; gap: 0.75rem; flex: 2 1 300px; }
     audio { width: 100%; height: 36px; border-radius: 4px; }
     
@@ -297,7 +306,6 @@
 </head>
 <body>
 
-  <!-- STICKY NAV -->
   <nav class="sticky-nav">
     <a href="#catholic-lofi">Lofi</a>
     <a href="#chapel-pop">Pop</a>
@@ -328,7 +336,7 @@
         <div class="imprint-header">
           <div class="imprint-header-text">
             <h2>Catholic Lofi</h2>
-            <span class="imprint-subtitle">Ambient beats for prayer and study</span>
+            <span class="imprint-subtitle">Ambient beats for prayer and study, featuring gently sung or spoken prayers</span>
           </div>
           <button class="btn-section-shuffle" onclick="triggerSectionShuffle('catholic-lofi')">🔀 Shuffle Lofi</button>
         </div>
@@ -383,7 +391,6 @@
     </footer>
   </div>
 
-  <!-- PERMISSION MODAL -->
   <div class="modal" id="permission-modal">
     <div class="modal-content">
       <h3 style="color: var(--accent); margin-bottom: 1rem;">Explicit Permission Granted</h3>
@@ -397,6 +404,7 @@
     const BASE_URL = `https://archive.org/download/${ITEM_ID}`;
 
     let globalTrackPool = [];
+    let currentShufflePool = [];
     let isShuffleActive = false;
 
     const IMPRINT_SYMBOLS = {
@@ -421,7 +429,9 @@
 
         tracks.forEach(track => {
           const trackTitle = track.querySelector('.track-title').textContent.toLowerCase();
-          if (trackTitle.includes(query) || albumTitle.includes(query)) {
+          const trackTag = track.querySelector('.track-tag-badge') ? track.querySelector('.track-tag-badge').textContent.toLowerCase() : '';
+
+          if (trackTitle.includes(query) || trackTag.includes(query) || albumTitle.includes(query)) {
             track.style.display = 'flex';
             hasMatch = true;
           } else {
@@ -481,8 +491,9 @@
       if (e) e.preventDefault();
       if (globalTrackPool.length === 0) return;
       
+      currentShufflePool = globalTrackPool;
       isShuffleActive = true;
-      playRandomTrack(globalTrackPool);
+      playRandomTrack(currentShufflePool);
     }
 
     // SECTION-SPECIFIC SHUFFLE ENGINE
@@ -490,8 +501,9 @@
       const sectionPool = globalTrackPool.filter(track => track.imprintKey === imprintKey);
       if (sectionPool.length === 0) return;
 
+      currentShufflePool = sectionPool;
       isShuffleActive = true;
-      playRandomTrack(sectionPool);
+      playRandomTrack(currentShufflePool);
     }
 
     function playRandomTrack(pool) {
@@ -546,6 +558,22 @@
       }
     }
 
+    // PARSE TAGS & CLEAN TITLES
+    function parseTrackTitleAndTag(rawTitle, rawFileName) {
+      let title = rawTitle || rawFileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").replace(/_vbr$/i, "");
+      let tag = "";
+
+      if (/\[spoken\]|\(spoken\)/i.test(title) || /\[spoken\]|\(spoken\)/i.test(rawFileName)) {
+        tag = "Spoken";
+        title = title.replace(/\[spoken\]|\(spoken\)/gi, "").trim();
+      } else if (/\[sung\]|\(sung\)/i.test(title) || /\[sung\]|\(sung\)/i.test(rawFileName)) {
+        tag = "Sung";
+        title = title.replace(/\[sung\]|\(sung\)/gi, "").trim();
+      }
+
+      return { cleanTitle: title, tag: tag };
+    }
+
     async function loadMusic() {
       try {
         const response = await fetch(`https://archive.org/metadata/${ITEM_ID}`);
@@ -566,7 +594,7 @@
           if (parts.length < 3) return;
 
           const imprintFolder = parts[0].toLowerCase().trim();
-          const albumName = parts[1];
+          const albumName = file.album || parts[1];
           const fileName = parts[2];
 
           let targetImprintKey = "";
@@ -590,9 +618,14 @@
             imprints[targetImprintKey][albumName].donateTxtUrl = fileUrl;
           }
           else if (fileName.endsWith('.mp3')) {
-            const trackTitle = fileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").replace(/_vbr$/i, "");
+            const rawTitle = file.title || null;
+            const parsed = parseTrackTitleAndTag(rawTitle, fileName);
+            const trackNum = file.track ? parseInt(file.track, 10) : 999;
+
             imprints[targetImprintKey][albumName].tracks.push({
-              title: trackTitle,
+              title: parsed.cleanTitle,
+              tag: parsed.tag,
+              trackNum: trackNum,
               url: fileUrl
             });
           }
@@ -606,6 +639,9 @@
           Object.keys(albums).forEach((albumName, index) => {
             const albumData = albums[albumName];
             if (albumData.tracks.length === 0 && !albumData.zipUrl) return;
+
+            // Sort tracks by ID3 track number if available
+            albumData.tracks.sort((a, b) => a.trackNum - b.trackNum);
 
             const details = document.createElement('details');
             details.className = 'album-accordion';
@@ -634,9 +670,13 @@
             albumData.tracks.forEach(track => {
               const row = document.createElement('div');
               row.className = 'track-row';
+
+              const tagHtml = track.tag ? `<span class="track-tag-badge">${track.tag}</span>` : '';
+
               row.innerHTML = `
                 <div class="track-info">
                   <span class="track-title">${track.title}</span>
+                  ${tagHtml}
                 </div>
                 <div class="track-controls">
                   <audio controls preload="none">
@@ -697,8 +737,8 @@
       }, true);
 
       document.addEventListener('ended', (e) => {
-        if (isShuffleActive) {
-          playRandomTrack(globalTrackPool);
+        if (isShuffleActive && currentShufflePool.length > 0) {
+          playRandomTrack(currentShufflePool);
           return;
         }
 
