@@ -31,7 +31,7 @@
       background-color: var(--bg);
       color: var(--text);
       line-height: 1.6;
-      padding-bottom: 3rem;
+      padding-bottom: 5rem;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -198,7 +198,7 @@
     }
     .btn-zip:hover, .btn-artist-donate:hover { background: var(--accent); color: #000; }
 
-    /* TRACK ROWS & SUBTLE BADGES */
+    /* TRACK ROWS & BADGES */
     .track-list {
       padding: 0.5rem 1rem 1rem 1rem;
       border-top: 1px solid var(--border);
@@ -246,6 +246,45 @@
       transition: all 0.2s;
     }
     .btn-download:hover { border-color: var(--text); color: var(--text); }
+
+    /* FLOATING NOW PLAYING BAR */
+    .now-playing-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: rgba(27, 27, 30, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--accent);
+      padding: 0.6rem 1.2rem;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .np-info { display: flex; align-items: center; gap: 0.75rem; overflow: hidden; }
+    .np-symbol { color: var(--accent); font-size: 1.2rem; }
+    .np-details { display: flex; flex-direction: column; overflow: hidden; }
+    .np-title { font-weight: 600; font-size: 0.9rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-album { font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .np-controls { display: flex; align-items: center; gap: 0.5rem; }
+    .btn-np-toggle {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .btn-np-toggle:hover { background: var(--accent-hover); }
 
     /* FOOTER & MODAL */
     footer {
@@ -391,6 +430,19 @@
     </footer>
   </div>
 
+  <div class="now-playing-bar" id="now-playing-bar">
+    <div class="np-info">
+      <span class="np-symbol" id="np-symbol">✝</span>
+      <div class="np-details">
+        <span class="np-title" id="np-title">Track Name</span>
+        <span class="np-album" id="np-album">Album Name</span>
+      </div>
+    </div>
+    <div class="np-controls">
+      <button class="btn-np-toggle" id="btn-np-toggle" onclick="toggleNowPlaying()">⏸</button>
+    </div>
+  </div>
+
   <div class="modal" id="permission-modal">
     <div class="modal-content">
       <h3 style="color: var(--accent); margin-bottom: 1rem;">Explicit Permission Granted</h3>
@@ -406,6 +458,7 @@
     let globalTrackPool = [];
     let currentShufflePool = [];
     let isShuffleActive = false;
+    let activeAudioEl = null;
 
     const IMPRINT_SYMBOLS = {
       "catholic-lofi": "⁜",
@@ -503,7 +556,7 @@
 
       currentShufflePool = sectionPool;
       isShuffleActive = true;
-      playRandomTrack(currentShufflePool);
+      playRandomTrack(sectionPool);
     }
 
     function playRandomTrack(pool) {
@@ -529,6 +582,30 @@
       if (track.audioElement) {
         track.audioElement.play();
       }
+    }
+
+    // TOGGLE NOW PLAYING BAR PLAY/PAUSE
+    function toggleNowPlaying() {
+      if (!activeAudioEl) return;
+      if (activeAudioEl.paused) {
+        activeAudioEl.play();
+      } else {
+        activeAudioEl.pause();
+      }
+    }
+
+    // UPDATE FLOATING NOW PLAYING UI
+    function updateNowPlayingBar(trackObj) {
+      const bar = document.getElementById('now-playing-bar');
+      const symbolEl = document.getElementById('np-symbol');
+      const titleEl = document.getElementById('np-title');
+      const albumEl = document.getElementById('np-album');
+
+      symbolEl.textContent = IMPRINT_SYMBOLS[trackObj.imprintKey] || "✝";
+      titleEl.textContent = trackObj.title;
+      albumEl.textContent = trackObj.albumName;
+
+      bar.style.display = 'flex';
     }
 
     // FETCH & PARSE DONATE.TXT FOR ALBUMS
@@ -558,18 +635,26 @@
       }
     }
 
-    // PARSE TAGS & CLEAN TITLES
+    // PARSE TAGS, CLEAN TITLES & STRIP DATE STAMPS
     function parseTrackTitleAndTag(rawTitle, rawFileName) {
       let title = rawTitle || rawFileName.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").replace(/_vbr$/i, "");
       let tag = "";
 
+      // 1. Strip trailing date stamps (e.g., "2 Sep 2026", "02-Sep-2026", "2026-09-02")
+      title = title.replace(/\b\d{1,2}\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*\d{2,4}\b/gi, "");
+      title = title.replace(/\b\d{4}[-_.]\d{2}[-_.]\d{2}\b/gi, "");
+
+      // 2. Extract Spoken/Sung tags
       if (/\[spoken\]|\(spoken\)/i.test(title) || /\[spoken\]|\(spoken\)/i.test(rawFileName)) {
         tag = "Spoken";
-        title = title.replace(/\[spoken\]|\(spoken\)/gi, "").trim();
+        title = title.replace(/\[spoken\]|\(spoken\)/gi, "");
       } else if (/\[sung\]|\(sung\)/i.test(title) || /\[sung\]|\(sung\)/i.test(rawFileName)) {
         tag = "Sung";
-        title = title.replace(/\[sung\]|\(sung\)/gi, "").trim();
+        title = title.replace(/\[sung\]|\(sung\)/gi, "");
       }
+
+      // Clean up extra double spaces left over from removals
+      title = title.replace(/\s+/g, " ").trim();
 
       return { cleanTitle: title, tag: tag };
     }
@@ -640,7 +725,6 @@
             const albumData = albums[albumName];
             if (albumData.tracks.length === 0 && !albumData.zipUrl) return;
 
-            // Sort tracks by ID3 track number if available
             albumData.tracks.sort((a, b) => a.trackNum - b.trackNum);
 
             const details = document.createElement('details');
@@ -691,13 +775,29 @@
 
               const audioEl = row.querySelector('audio');
 
-              globalTrackPool.push({
+              const trackObj = {
                 title: track.title,
+                albumName: albumName,
                 url: track.url,
                 imprintKey: imprintKey,
                 audioElement: audioEl,
                 accordion: details,
                 rowElement: row
+              };
+
+              globalTrackPool.push(trackObj);
+
+              // Audio State Change Event Listeners
+              audioEl.addEventListener('play', () => {
+                activeAudioEl = audioEl;
+                updateNowPlayingBar(trackObj);
+                document.getElementById('btn-np-toggle').textContent = "⏸";
+              });
+
+              audioEl.addEventListener('pause', () => {
+                if (activeAudioEl === audioEl) {
+                  document.getElementById('btn-np-toggle').textContent = "▶";
+                }
               });
 
               trackListEl.appendChild(row);
