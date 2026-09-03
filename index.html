@@ -907,6 +907,14 @@
 
             const details = document.createElement('details');
             details.className = 'album-accordion';
+            details.setAttribute('name', 'album-accordion-group');
+details.addEventListener('toggle', () => {
+  if (details.open) {
+    document.querySelectorAll('.album-accordion').forEach(other => {
+      if (other !== details) other.open = false;
+    });
+  }
+});
             if (index === 0) details.open = true;
 
             const actionsDiv = document.createElement('div');
