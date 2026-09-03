@@ -9,33 +9,73 @@
       --bg: #121212;
       --card-bg: #1e1e1e;
       --accent: #d4af37;
+      --accent-hover: #f1c40f;
       --text: #ffffff;
       --text-muted: #a0a0a0;
       --player-bg: #181818;
+      --border: #282828;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg);
       color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
       padding-bottom: 90px;
     }
 
+    /* Navigation Header */
     header {
-      padding: 2rem 1rem;
-      text-align: center;
-      border-bottom: 1px solid #282828;
+      background: #161616;
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 900;
     }
 
+    .brand {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    /* Main Container */
     .container {
-      max-width: 900px;
+      max-width: 960px;
       margin: 2rem auto;
-      padding: 0 1rem;
+      padding: 0 1.5rem;
+      flex: 1;
+      width: 100%;
     }
 
+    /* Album Cards */
     .album-card {
       background: var(--card-bg);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 1.5rem;
       margin-bottom: 2rem;
@@ -44,47 +84,88 @@
     .album-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-      border-bottom: 1px solid #333;
-      padding-bottom: 0.5rem;
+      align-items: flex-start;
+      margin-bottom: 1.2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+      flex-wrap: wrap;
+      gap: 1rem;
     }
 
-    .album-title { font-size: 1.25rem; color: var(--accent); }
-    
-    .zip-btn {
+    .album-meta-title {
+      font-size: 1.3rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .imprint-tag {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn {
       background: #2a2a2a;
       color: var(--text);
       text-decoration: none;
       padding: 0.4rem 0.8rem;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       border: 1px solid #444;
+      cursor: pointer;
+      transition: background 0.2s;
     }
-    .zip-btn:hover { background: #333; }
+    .btn:hover { background: #333; }
+    .btn-donate { background: #3a2e12; border-color: var(--accent); color: var(--accent); }
+    .btn-donate:hover { background: #4a3b18; }
 
+    /* Track List */
     .track-list { list-style: none; }
     
     .track-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.6rem 0.5rem;
+      padding: 0.7rem 0.6rem;
       border-radius: 4px;
       cursor: pointer;
+      transition: background 0.15s;
     }
     .track-item:hover { background: #282828; }
     .track-item.active { background: #2a2618; color: var(--accent); }
 
-    .track-meta { display: flex; align-items: center; gap: 0.5rem; }
+    .track-meta { display: flex; align-items: center; gap: 0.6rem; }
     .tag-badge {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       padding: 0.15rem 0.4rem;
       border-radius: 3px;
       background: #333;
       color: var(--accent);
       text-transform: uppercase;
     }
+
+    /* Footer */
+    footer {
+      background: #161616;
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
 
     /* Persistent Player */
     #player-bar {
@@ -94,7 +175,7 @@
       right: 0;
       height: 80px;
       background: var(--player-bg);
-      border-top: 1px solid #282828;
+      border-top: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -103,7 +184,7 @@
     }
 
     .player-info { width: 30%; }
-    .player-title { font-weight: bold; font-size: 0.95rem; }
+    .player-title { font-weight: 600; font-size: 0.95rem; }
     .player-album { font-size: 0.8rem; color: var(--text-muted); }
 
     .player-controls {
@@ -153,13 +234,30 @@
 </head>
 <body>
 
+  <!-- Menu Header -->
   <header>
-    <h1>Methodius Media</h1>
+    <a href="/" class="brand">Methodius Media</a>
+    <nav>
+      <ul>
+        <li><a href="#catalog">Catalog</a></li>
+        <li><a href="https://catholiclofi.com" target="_blank" rel="noopener">Catholic Lofi</a></li>
+        <li><a href="https://dailybeats.com" target="_blank" rel="noopener">Daily Beats</a></li>
+      </ul>
+    </nav>
   </header>
 
+  <!-- Main Content -->
   <div class="container" id="catalog-container">
-    <p>Loading catalog...</p>
+    <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Loading music catalog...</p>
   </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; Methodius Media. All audio hosted on self-hosted high-speed storage.</p>
+    <p style="margin-top: 0.5rem;">
+      <a href="https://media.methodius.media/catalog.json" target="_blank">Raw JSON Catalog</a>
+    </p>
+  </footer>
 
   <!-- Persistent Player -->
   <div id="player-bar">
@@ -216,7 +314,11 @@
           albumEl.className = 'album-card';
 
           const zipHtml = album.zipUrl 
-            ? `<a href="${MEDIA_BASE}/${encodeURI(album.zipUrl)}" class="zip-btn" download>Download Album (WAV)</a>` 
+            ? `<a href="${MEDIA_BASE}/${encodeURI(album.zipUrl)}" class="btn" download>Download WAV Zip</a>` 
+            : '';
+
+          const donateHtml = album.hasDonate 
+            ? `<a href="${MEDIA_BASE}/${encodeURI(album.imprintFolder + '/' + album.albumName + '/donate.txt')}" target="_blank" class="btn btn-donate">Support</a>` 
             : '';
 
           let tracksHtml = '';
@@ -244,8 +346,14 @@
 
           albumEl.innerHTML = `
             <div class="album-header">
-              <div class="album-title">${album.albumName}</div>
-              ${zipHtml}
+              <div>
+                <span class="imprint-tag">${album.imprintFolder}</span>
+                <div class="album-meta-title">${album.albumName}</div>
+              </div>
+              <div class="action-group">
+                ${donateHtml}
+                ${zipHtml}
+              </div>
             </div>
             <ul class="track-list">${tracksHtml}</ul>
           `;
@@ -253,7 +361,7 @@
           catalogContainer.appendChild(albumEl);
         });
 
-        // Track click events
+        // Track click bindings
         document.querySelectorAll('.track-item').forEach(item => {
           item.addEventListener('click', () => {
             const index = parseInt(item.getAttribute('data-index'), 10);
@@ -263,7 +371,7 @@
         });
 
       } catch (err) {
-        catalogContainer.innerHTML = '<p>Error loading catalog. Please try again later.</p>';
+        catalogContainer.innerHTML = '<p style="color: #e74c3c; text-align: center; padding: 2rem;">Error loading catalog. Please check catalog.json or CORS settings.</p>';
         console.error(err);
       }
     }
@@ -277,7 +385,6 @@
       titleEl.textContent = track.title;
       albumEl.textContent = `${track.albumName} ${track.tag ? '[' + track.tag + ']' : ''}`;
 
-      // Highlight active UI track
       document.querySelectorAll('.track-item').forEach((el, idx) => {
         el.classList.toggle('active', idx === currentIndex);
       });
@@ -290,7 +397,7 @@
       return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-    // Player Controls
+    // Player Events
     playBtn.addEventListener('click', () => {
       if (currentIndex === -1 && playlist.length > 0) loadTrack(0);
       if (audio.paused) {
