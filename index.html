@@ -136,6 +136,20 @@
     }
     .btn-donate:hover { background: var(--accent); color: #000; }
 
+    /* BADGES */
+    .badge {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 3px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      font-family: var(--font-sans);
+    }
+    .badge-sung { border: 1px solid #d4af37; color: #d4af37; }
+    .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
+
     /* SEARCH BAR */
     .search-wrapper {
       margin: 2rem 0 0.5rem 0;
@@ -208,6 +222,7 @@
       margin-bottom: 1rem;
       overflow: hidden;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      scroll-margin-top: 64px;
     }
     .album-summary {
       padding: 1rem;
@@ -220,7 +235,7 @@
       user-select: none;
     }
     .album-summary::-webkit-details-marker { display: none; }
-    .album-title-wrap { display: flex; align-items: center; gap: 0.5rem; }
+    .album-title-wrap { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .album-symbol { color: var(--accent); font-size: 1.1rem; }
     .album-title { 
       font-family: var(--font-serif);
@@ -970,7 +985,7 @@
 
         catalogData.forEach(album => {
           const imprintFolder = (album.imprintFolder || "").toLowerCase().trim();
-          const albumName = album.albumName;
+          const rawAlbumName = album.albumName;
 
           let targetImprintKey = "";
           if (imprintFolder.includes("lofi")) targetImprintKey = "catholic-lofi";
@@ -980,8 +995,15 @@
 
           if (!targetImprintKey) return;
 
+          // Detect [sung]/[spoken] tag embedded in the album name itself
+          const albumTagMatch = rawAlbumName.match(/\[(sung|spoken)\]|\((sung|spoken)\)/i);
+          const albumSpecialTag = albumTagMatch ? (albumTagMatch[1] || albumTagMatch[2]).toLowerCase() : null;
+          const albumName = rawAlbumName.replace(/\s*\[(sung|spoken)\]|\s*\((sung|spoken)\)/gi, '').trim();
+
           if (!imprints[targetImprintKey][albumName]) {
-            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null };
+            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null, specialTag: albumSpecialTag };
+          } else if (albumSpecialTag && !imprints[targetImprintKey][albumName].specialTag) {
+            imprints[targetImprintKey][albumName].specialTag = albumSpecialTag;
           }
 
           if (album.zipUrl) {
@@ -995,9 +1017,28 @@
           if (album.tracks && album.tracks.length > 0) {
             album.tracks.forEach(t => {
               const fileUrl = `${MEDIA_BASE}/${encodeURI(t.path)}`;
+
+              let trackTitle = t.title;
+              let trackTag = t.tag || "";
+
+              // If no tag was already set on the track, check the title itself for [sung]/[spoken]
+              if (!trackTag && trackTitle) {
+                const trackTagMatch = trackTitle.match(/\[(sung|spoken)\]|\((sung|spoken)\)/i);
+                if (trackTagMatch) {
+                  const matched = (trackTagMatch[1] || trackTagMatch[2]).toLowerCase();
+                  trackTag = matched.charAt(0).toUpperCase() + matched.slice(1);
+                  trackTitle = trackTitle.replace(/\s*\[(sung|spoken)\]|\s*\((sung|spoken)\)/gi, '').trim();
+                }
+              }
+
+              // Inherit the album-level tag if the track still has none
+              if (!trackTag && albumSpecialTag) {
+                trackTag = albumSpecialTag.charAt(0).toUpperCase() + albumSpecialTag.slice(1);
+              }
+
               imprints[targetImprintKey][albumName].tracks.push({
-                title: t.title,
-                tag: t.tag || "",
+                title: trackTitle,
+                tag: trackTag,
                 trackNum: t.trackNum || 999,
                 url: fileUrl
               });
@@ -1028,9 +1069,16 @@
                 document.querySelectorAll('.album-accordion').forEach(other => {
                   if (other !== details) other.open = false;
                 });
+                requestAnimationFrame(() => {
+                  details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
               }
             });
             if (index === 0) details.open = true;
+
+            const specialBadgeHtml = albumData.specialTag
+              ? `<span class="badge badge-${albumData.specialTag}">${albumData.specialTag}</span>`
+              : '';
 
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'album-actions';
@@ -1138,6 +1186,7 @@
             titleWrap.innerHTML = `
               <span class="album-symbol">${symbol}</span>
               <span class="album-title">${albumName}</span>
+              ${specialBadgeHtml}
             `;
 
             summaryEl.appendChild(titleWrap);
