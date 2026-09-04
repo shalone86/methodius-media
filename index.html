@@ -392,6 +392,29 @@
       transition: width 0.1s linear;
     }
 
+    .np-side-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-np-action {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.35rem 0.65rem;
+      font-size: 0.78rem;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: var(--font-sans);
+    }
+    .btn-np-action:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 640px) {
+      .np-side-actions .btn-np-action.download-label { display: none; }
+    }
+
     /* FOOTER & MODAL */
     footer {
       text-align: center;
@@ -560,6 +583,12 @@
         </div>
         <span class="np-time" id="np-time-dur">00:00</span>
       </div>
+    </div>
+
+    <div class="np-side-actions">
+      <button class="btn-np-action" onclick="jumpToCurrentTrack()" title="Scroll to playing track">View Track</button>
+      <button class="btn-np-action download-label" onclick="downloadCurrentTrack()" title="Download MP3">↓ MP3</button>
+      <button class="btn-np-action" onclick="shareCurrentTrack(this)" title="Share direct link">🔗 Share</button>
     </div>
   </div>
 
@@ -836,6 +865,31 @@
       albumEl.textContent = trackObj.albumName;
 
       bar.style.display = 'flex';
+    }
+
+    function jumpToCurrentTrack() {
+      if (currentTrackIndex === -1 || !globalTrackPool[currentTrackIndex]) return;
+      const trackObj = globalTrackPool[currentTrackIndex];
+      playTrackByObj(trackObj);
+    }
+
+    function downloadCurrentTrack() {
+      if (currentTrackIndex === -1 || !globalTrackPool[currentTrackIndex]) return;
+      const trackObj = globalTrackPool[currentTrackIndex];
+      
+      const link = document.createElement('a');
+      link.href = trackObj.url;
+      link.download = `${trackObj.title}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function shareCurrentTrack(btn) {
+      if (currentTrackIndex === -1 || !globalTrackPool[currentTrackIndex]) return;
+      const trackObj = globalTrackPool[currentTrackIndex];
+      const trackSlug = slugify(`${trackObj.albumName}-${trackObj.title}`);
+      shareLink(`#track-${trackSlug}`, btn);
     }
 
     // FETCH & PARSE DONATE.TXT FOR ALBUMS
