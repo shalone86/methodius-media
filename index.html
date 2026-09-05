@@ -29,6 +29,7 @@
       --muted: #a1a1aa;
       --accent: #d4af37;
       --accent-hover: #f1c40f;
+      --purple-badge: #c084fc;
       --font-heading: 'Cinzel', Georgia, serif;
       --font-serif: 'Cormorant Garamond', Georgia, serif;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -44,6 +45,15 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+
+    /* RESPONSIVE DISPLAY HELPERS */
+    .mobile-only { display: none !important; }
+    .desktop-only { display: inline !important; }
+
+    @media (max-width: 640px) {
+      .mobile-only { display: inline !important; }
+      .desktop-only { display: none !important; }
     }
 
     /* STICKY NAV */
@@ -136,7 +146,7 @@
     }
     .btn-donate:hover { background: var(--accent); color: #000; }
 
-    /* BADGES */
+    /* BADGES (SUNG IS PURPLE TO DIFFERENTIATE FROM GOLD BUTTONS) */
     .badge {
       font-size: 0.7rem;
       padding: 0.15rem 0.45rem;
@@ -147,7 +157,7 @@
       white-space: nowrap;
       font-family: var(--font-sans);
     }
-    .badge-sung { border: 1px solid #d4af37; color: #d4af37; }
+    .badge-sung { border: 1px solid var(--purple-badge); color: var(--purple-badge); }
     .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
 
     /* SEARCH BAR */
@@ -259,10 +269,12 @@
       font-family: var(--font-sans);
       cursor: pointer;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-zip:hover, .btn-artist-donate:hover, .btn-album-share:hover { background: var(--accent); color: #000; }
 
-    /* TRACK ROWS & BADGES */
     .track-list {
       padding: 0.5rem 1rem 1rem 1rem;
       border-top: 1px solid var(--border);
@@ -305,7 +317,7 @@
     .track-controls { display: flex; align-items: center; gap: 0.5rem; flex: 2 1 280px; width: 100%; }
     audio { flex: 1; height: 36px; border-radius: 4px; min-width: 140px; }
     
-    /* COMPACT ICON BUTTONS (PREVENT SQUISHING ON MOBILE) */
+    /* COMPACT ICON BUTTONS FOR TRACK ROWS */
     .btn-download, .btn-share {
       background: transparent;
       border: 1px solid var(--border);
@@ -344,17 +356,17 @@
       background: rgba(27, 27, 30, 0.96);
       backdrop-filter: blur(12px);
       border-top: 1px solid var(--accent);
-      padding: 0.6rem 1.2rem;
+      padding: 0.6rem 1rem;
       display: none;
       align-items: center;
-      gap: 1rem;
+      gap: 0.8rem;
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
       font-family: var(--font-sans);
     }
     .np-controls {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.3rem;
       flex-shrink: 0;
     }
     .btn-np {
@@ -402,7 +414,7 @@
     .np-meta-row {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       overflow: hidden;
     }
     .np-symbol { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
@@ -412,7 +424,7 @@
     .np-progress-row {
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
     }
     .np-time { font-size: 0.72rem; color: var(--muted); font-family: monospace; min-width: 38px; flex-shrink: 0; }
     .np-progress-bg {
@@ -434,7 +446,7 @@
     .np-side-actions {
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.35rem;
       flex-shrink: 0;
     }
     .btn-np-action {
@@ -449,12 +461,11 @@
       transition: all 0.2s;
       font-family: var(--font-sans);
       flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .btn-np-action:hover { border-color: var(--accent); color: var(--accent); }
-
-    @media (max-width: 640px) {
-      .np-side-actions .btn-np-action.download-label { display: none; }
-    }
 
     /* FOOTER & MODAL */
     footer {
@@ -628,9 +639,16 @@
     </div>
 
     <div class="np-side-actions">
+      <!-- "View Track" is the ONLY button that keeps full words on mobile -->
       <button class="btn-np-action" onclick="jumpToCurrentTrack()" title="Scroll to playing track">View Track</button>
-      <button class="btn-np-action download-label" onclick="downloadCurrentTrack()" title="Download MP3">↓ MP3</button>
-      <button class="btn-np-action" onclick="shareCurrentTrack(this)" title="Share direct link">🔗 Share</button>
+      <!-- Download collapses to down arrow ↓ on mobile -->
+      <button class="btn-np-action download-label" onclick="downloadCurrentTrack()" title="Download MP3">
+        <span class="desktop-only">↓ MP3</span><span class="mobile-only">↓</span>
+      </button>
+      <!-- Share keeps link emoji 🔗 on mobile -->
+      <button class="btn-np-action" onclick="shareCurrentTrack(this)" title="Share direct link">
+        <span class="desktop-only">🔗 Share</span><span class="mobile-only">🔗</span>
+      </button>
     </div>
   </div>
 
@@ -671,15 +689,33 @@
       history.pushState(null, null, hash);
       
       navigator.clipboard.writeText(shareUrl).then(() => {
-        const originalTitle = btn.getAttribute('title') || '';
-        btn.setAttribute('title', 'Copied!');
-        btn.style.borderColor = 'var(--accent)';
-        btn.style.color = 'var(--accent)';
-        setTimeout(() => { 
-          btn.setAttribute('title', originalTitle); 
-          btn.style.borderColor = '';
-          btn.style.color = '';
-        }, 1800);
+        const desktopSpan = btn.querySelector('.desktop-only');
+        const mobileSpan = btn.querySelector('.mobile-only');
+
+        if (desktopSpan && mobileSpan) {
+          const origDesktop = desktopSpan.textContent;
+          const origMobile = mobileSpan.textContent;
+          desktopSpan.textContent = "Copied!";
+          mobileSpan.textContent = "✓";
+          btn.style.borderColor = 'var(--accent)';
+          btn.style.color = 'var(--accent)';
+          setTimeout(() => { 
+            desktopSpan.textContent = origDesktop; 
+            mobileSpan.textContent = origMobile;
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }, 1800);
+        } else {
+          const originalTitle = btn.getAttribute('title') || '';
+          btn.setAttribute('title', 'Copied!');
+          btn.style.borderColor = 'var(--accent)';
+          btn.style.color = 'var(--accent)';
+          setTimeout(() => { 
+            btn.setAttribute('title', originalTitle); 
+            btn.style.borderColor = '';
+            btn.style.color = '';
+          }, 1800);
+        }
       }).catch(() => {
         prompt("Copy direct link:", shareUrl);
       });
@@ -737,7 +773,7 @@
       return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
-    // SANITIZE & DEDUPLICATE TAGS
+    // SANITIZE & DEDUPLICATE TAGS (e.g., "[sung] sung" -> "Sung")
     function sanitizeTag(rawTag) {
       if (!rawTag) return "";
       const cleaned = rawTag.replace(/[\[\]\(\)]/g, ' ').trim();
@@ -814,7 +850,6 @@
       }
     }
 
-    // GLOBAL SHUFFLE ENGINE
     function triggerShuffle(e) {
       if (e) e.preventDefault();
       if (globalTrackPool.length === 0) return;
@@ -824,7 +859,6 @@
       playRandomTrack(currentShufflePool);
     }
 
-    // SECTION-SPECIFIC SHUFFLE ENGINE
     function triggerSectionShuffle(imprintKey) {
       const sectionPool = globalTrackPool.filter(track => track.imprintKey === imprintKey);
       if (sectionPool.length === 0) return;
@@ -864,7 +898,6 @@
       }
     }
 
-    // NEXT & PREVIOUS BUTTON CONTROLS
     function playNextTrack() {
       const activePool = isShuffleActive && currentShufflePool.length > 0 ? currentShufflePool : globalTrackPool;
       if (activePool.length === 0) return;
@@ -889,7 +922,6 @@
       }
     }
 
-    // TOGGLE PLAY/PAUSE
     function toggleNowPlaying() {
       if (!activeAudioEl) return;
       if (activeAudioEl.paused) {
@@ -899,7 +931,6 @@
       }
     }
 
-    // TIME SCRUBBING
     function seekAudio(e) {
       if (!activeAudioEl || !activeAudioEl.duration) return;
       const rect = e.currentTarget.getBoundingClientRect();
@@ -910,7 +941,6 @@
       activeAudioEl.currentTime = (clickX / width) * duration;
     }
 
-    // UPDATE NOW PLAYING BAR UI
     function updateNowPlayingBar(trackObj) {
       const bar = document.getElementById('now-playing-bar');
       const symbolEl = document.getElementById('np-symbol');
@@ -949,7 +979,6 @@
       shareLink(`#track-${trackSlug}`, btn);
     }
 
-    // FETCH & PARSE DONATE.TXT FOR ALBUMS
     async function loadDonateInfo(donateTxtUrl, actionContainerEl) {
       try {
         const res = await fetch(donateTxtUrl);
@@ -1089,12 +1118,16 @@
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'album-actions';
 
+            // ALBUM ZIP BUTTON (CLEANED TEXT ON DESKTOP, DOWN ARROW ON MOBILE)
             if (albumData.zipUrl) {
               const zipBtn = document.createElement('a');
               zipBtn.className = 'btn-zip';
               zipBtn.href = albumData.zipUrl;
               zipBtn.download = '';
-              zipBtn.textContent = '↓ Full Album (WAV ZIP)';
+              zipBtn.innerHTML = `
+                <span class="desktop-only">↓ Full Album</span>
+                <span class="mobile-only">↓</span>
+              `;
               zipBtn.onclick = (e) => e.stopPropagation();
               actionsDiv.appendChild(zipBtn);
             }
@@ -1103,9 +1136,13 @@
               loadDonateInfo(albumData.donateTxtUrl, actionsDiv);
             }
 
+            // ALBUM SHARE BUTTON (FULL TEXT ON DESKTOP, LINK EMOJI ON MOBILE)
             const albumShareBtn = document.createElement('button');
             albumShareBtn.className = 'btn-album-share';
-            albumShareBtn.textContent = '🔗 Share Album';
+            albumShareBtn.innerHTML = `
+              <span class="desktop-only">🔗 Share Album</span>
+              <span class="mobile-only">🔗</span>
+            `;
             albumShareBtn.onclick = (e) => {
               e.stopPropagation();
               shareLink(`#album-${albumSlug}`, albumShareBtn);
