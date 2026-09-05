@@ -277,16 +277,29 @@
       list-style: none;
       user-select: none;
       gap: 0.75rem;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* Forces everything on a single line */
+      overflow: hidden;
     }
     .album-summary::-webkit-details-marker { display: none; }
-    .album-title-wrap { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .album-symbol { color: var(--accent); font-size: 1.1rem; }
+    
+    .album-title-wrap { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      flex-wrap: nowrap; /* Keeps cross and title joined */
+      min-width: 0; /* Critical for child text truncation */
+      flex: 1; 
+    }
+    .album-symbol { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
+    
     .album-title { 
       font-family: var(--font-serif);
       font-size: 1.2rem; 
       color: var(--text); 
       font-weight: 600;
+      white-space: nowrap; /* Prevents title from breaking */
+      overflow: hidden;
+      text-overflow: ellipsis; /* Appends ... if it overflows */
     }
     .album-year {
       font-family: var(--font-sans);
@@ -296,9 +309,16 @@
       font-style: italic;
       margin-left: -0.3rem;
       position: relative;
-      top: 1px; /* Adjusted to match baseline with the slightly larger font size */
+      top: 1px; 
+      flex-shrink: 0;
     }
-    .album-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .album-actions { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      flex-wrap: nowrap; 
+      flex-shrink: 0; 
+    }
 
     .btn-zip, .btn-artist-donate, .btn-album-share {
       background: transparent;
@@ -331,7 +351,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
+      flex-wrap: nowrap; /* Forces one line */
       gap: 0.6rem;
       padding: 0.5rem 0.5rem;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -339,13 +359,23 @@
       transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .track-row:last-child { border-bottom: none; }
-    .track-info { flex: 1 1 180px; display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+    
+    .track-info { 
+      flex: 1 1 auto; 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      min-width: 0; 
+      flex-wrap: nowrap; 
+    }
     .track-title { 
       font-family: var(--font-sans);
       font-weight: 500; 
       color: var(--text); 
       font-size: 0.95rem; 
-      word-break: break-word;
+      white-space: nowrap; 
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .track-tag-badge {
       font-size: 0.68rem;
@@ -359,7 +389,13 @@
       flex-shrink: 0;
     }
 
-    .track-controls { display: flex; align-items: center; gap: 0.5rem; flex: 2 1 280px; width: 100%; min-width: 0; }
+    .track-controls { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      flex-shrink: 0; 
+      flex-wrap: nowrap; 
+    }
     audio { flex: 1 1 120px; height: 36px; border-radius: 4px; min-width: 110px; }
     
     .track-btn-group {
