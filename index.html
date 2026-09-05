@@ -61,7 +61,8 @@
       .btn-album-share, 
       .btn-download, 
       .btn-share, 
-      .btn-np-icon {
+      .btn-np-icon,
+      .btn-mobile-play {
         width: 34px !important;
         height: 34px !important;
         min-width: 34px !important;
@@ -73,6 +74,17 @@
         flex-shrink: 0 !important;
         font-size: 0.85rem !important;
         border-radius: 4px !important;
+      }
+
+      .btn-mobile-play {
+        background: var(--accent) !important;
+        color: #000 !important;
+        border: none !important;
+        font-size: 1.1rem !important;
+      }
+
+      .audio-player { 
+        display: none !important; 
       }
       
       .now-playing-bar {
@@ -361,11 +373,11 @@
     .track-row:last-child { border-bottom: none; }
     
     .track-info { 
-      flex: 1 1 auto; 
+      flex: 1 1 0%; 
       display: flex; 
       align-items: center; 
       gap: 0.5rem; 
-      min-width: 0; 
+      min-width: 60px; /* Protect song title visibility */
       flex-wrap: nowrap; 
     }
     .track-title { 
@@ -396,7 +408,7 @@
       flex-shrink: 0; 
       flex-wrap: nowrap; 
     }
-    audio { flex: 1 1 120px; height: 36px; border-radius: 4px; min-width: 110px; }
+    audio { width: 120px; height: 36px; border-radius: 4px; }
     
     .track-btn-group {
       display: flex;
@@ -753,6 +765,17 @@
     let isShuffleActive = false;
     let currentTrackIndex = -1;
     let activeAudioEl = null;
+
+    function toggleTrackRow(btn) {
+      const audioEl = btn.nextElementSibling;
+      if (audioEl && audioEl.tagName === 'AUDIO') {
+        if (audioEl.paused) {
+          audioEl.play();
+        } else {
+          audioEl.pause();
+        }
+      }
+    }
 
     const IMPRINT_SYMBOLS = {
       "catholic-lofi": "⁜",
@@ -1258,7 +1281,8 @@
                   ${tagHtml}
                 </div>
                 <div class="track-controls">
-                  <audio controls preload="none">
+                  <button class="btn-mobile-play mobile-only" onclick="toggleTrackRow(this)">▶</button>
+                  <audio class="audio-player" controls preload="none">
                     <source src="${track.url}" type="audio/mpeg">
                   </audio>
                   <div class="track-btn-group">
@@ -1296,9 +1320,12 @@
               };
 
               globalTrackPool.push(trackObj);
+              
+              const mobilePlayBtn = row.querySelector('.btn-mobile-play');
 
               // Audio State Change Event Listeners
               audioEl.addEventListener('play', () => {
+                if (mobilePlayBtn) mobilePlayBtn.textContent = "⏸";
                 activeAudioEl = audioEl;
                 currentTrackIndex = globalTrackPool.indexOf(trackObj);
                 updateNowPlayingBar(trackObj);
@@ -1307,6 +1334,7 @@
               });
 
               audioEl.addEventListener('pause', () => {
+                if (mobilePlayBtn) mobilePlayBtn.textContent = "▶";
                 if (activeAudioEl === audioEl) {
                   document.getElementById('btn-np-toggle').textContent = "▶";
                 }
