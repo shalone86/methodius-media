@@ -354,7 +354,7 @@
     }
 
     .track-controls-wrap { 
-      flex: 2 1 300px;
+      flex: 0 0 auto;
       display: flex; 
       align-items: center; 
       gap: 0.6rem; 
@@ -374,7 +374,7 @@
       align-items: center;
       gap: 0.4rem;
       flex-shrink: 0;
-      flex-wrap: wrap;
+      flex-wrap: nowrap !important;
     }
 
     /* Mobile Play Button - Specific CSS */
@@ -400,6 +400,17 @@
     .mobile-only { display: none !important; }
     .desktop-only { display: inline-flex !important; align-items: center; }
 
+    /* WebKit/Safari inner span sizing fix */
+    .btn-share .mobile-only,
+    .btn-download .mobile-only,
+    .btn-album-share .mobile-only {
+      width: 100%;
+      height: 100%;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+    }
+
     @media (max-width: 640px) {
       .mobile-only { display: inline-flex !important; align-items: center; justify-content: center; }
       .desktop-only { display: none !important; }
@@ -415,8 +426,8 @@
         height: 34px !important;
       }
       
-      /* Specific square width limits for generic icon buttons (download/share on tracks) */
-      .btn-download, .btn-share {
+      /* Specific square width limits for generic icon buttons (download/share on tracks & album share) */
+      .btn-download, .btn-share, .btn-album-share {
         width: 34px !important;
         min-width: 34px !important;
         padding: 0 !important;
@@ -1053,6 +1064,19 @@
       albumEl.textContent = trackObj.albumName;
 
       bar.style.display = 'flex';
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: trackObj.title,
+          artist: "Cyril & Methodius Media",
+          album: trackObj.albumName
+        });
+
+        navigator.mediaSession.setActionHandler('play', () => activeAudioEl && activeAudioEl.play());
+        navigator.mediaSession.setActionHandler('pause', () => activeAudioEl && activeAudioEl.pause());
+        navigator.mediaSession.setActionHandler('previoustrack', playPrevTrack);
+        navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
+      }
     }
 
     function jumpToCurrentTrack() {
