@@ -48,52 +48,6 @@
       flex-direction: column;
     }
 
-    /* RESPONSIVE DISPLAY HELPERS */
-    .mobile-only { display: none !important; }
-    .desktop-only { display: inline !important; }
-
-    @media (max-width: 640px) {
-      .mobile-only { display: inline !important; }
-      .desktop-only { display: none !important; }
-      
-      /* Standardize equal square sizing for mobile buttons */
-      .btn-zip, 
-      .btn-album-share, 
-      .btn-download, 
-      .btn-share, 
-      .btn-np-icon,
-      .btn-mobile-play {
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
-        min-height: 34px !important;
-        padding: 0 !important;
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        flex-shrink: 0 !important;
-        font-size: 0.85rem !important;
-        border-radius: 4px !important;
-      }
-
-      .btn-mobile-play {
-        background: var(--accent) !important;
-        color: #000 !important;
-        border: none !important;
-        font-size: 1.1rem !important;
-      }
-
-      .audio-player { 
-        display: none !important; 
-      }
-      
-      .now-playing-bar {
-        padding: 0.5rem 0.8rem !important;
-        gap: 0.8rem !important;
-      }
-    }
-
-    /* STICKY NAV */
     .sticky-nav {
       position: sticky;
       top: 0;
@@ -126,7 +80,6 @@
       flex: 1;
     }
 
-    /* HEADER & HERO */
     header {
       padding: 3rem 0 1.5rem 0;
       text-align: center;
@@ -183,29 +136,6 @@
     }
     .btn-donate:hover { background: var(--accent); color: #000; }
 
-    /* BADGES (SUNG IS PURPLE TO DIFFERENTIATE FROM GOLD BUTTONS) */
-    .badge {
-      font-size: 0.7rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: 3px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      white-space: nowrap;
-      font-family: var(--font-sans);
-    }
-    .badge-sung { border: 1px solid var(--purple-badge); color: var(--purple-badge); }
-    .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
-
-    .album-tag-container {
-      display: inline-flex;
-      gap: 0.35rem;
-      flex-wrap: nowrap;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
-    /* SEARCH BAR */
     .search-wrapper {
       margin: 2rem 0 0.5rem 0;
       text-align: center;
@@ -226,7 +156,57 @@
     .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--muted); }
 
-    /* IMPRINT SECTIONS */
+    .badge, .track-tag-badge, .btn-zip, .btn-artist-donate, .btn-album-share, .btn-download, .btn-share {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      font-size: 0.72rem;
+      padding: 0 0.65rem;
+      border-radius: 4px;
+      font-weight: 600;
+      white-space: nowrap;
+      font-family: var(--font-sans);
+      transition: all 0.2s;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Tag specifics */
+    .badge, .track-tag-badge {
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: default;
+    }
+    .badge-sung { border: 1px solid var(--purple-badge); color: var(--purple-badge); }
+    .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
+    .track-tag-badge { border: 1px solid var(--border); color: var(--muted); font-size: 0.68rem; padding: 0 0.4rem; }
+
+    /* Button specifics */
+    .btn-zip, .btn-artist-donate, .btn-album-share {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-size: 0.75rem;
+    }
+    .btn-zip:hover, .btn-artist-donate:hover, .btn-album-share:hover { background: var(--accent); color: #000; }
+
+    .btn-download, .btn-share {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+    .btn-download:hover, .btn-share:hover { border-color: var(--text); color: var(--text); }
+
+    .album-tag-container, .track-tag-container {
+      display: inline-flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
     .imprint-section { margin-top: 2.5rem; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
@@ -269,7 +249,6 @@
       color: var(--accent);
     }
 
-    /* ACCORDION ALBUMS */
     .album-accordion {
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -289,19 +268,28 @@
       list-style: none;
       user-select: none;
       gap: 0.75rem;
-      flex-wrap: nowrap; /* Forces everything on a single line */
-      overflow: hidden;
+      flex-wrap: wrap;
     }
     .album-summary::-webkit-details-marker { display: none; }
     
     .album-title-wrap { 
       display: flex; 
       align-items: center; 
-      gap: 0.5rem; 
-      flex-wrap: nowrap; /* Keeps cross and title joined */
-      min-width: 0; /* Critical for child text truncation */
-      flex: 1; 
+      gap: 0.6rem; 
+      flex-wrap: wrap; 
+      min-width: 0; 
+      flex: 1 1 200px; 
     }
+
+    .album-controls-wrap {
+      display: flex; 
+      align-items: center; 
+      gap: 0.6rem; 
+      flex-wrap: wrap;
+      flex: 2 1 300px;
+      justify-content: flex-end;
+    }
+
     .album-symbol { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
     
     .album-title { 
@@ -309,9 +297,7 @@
       font-size: 1.2rem; 
       color: var(--text); 
       font-weight: 600;
-      white-space: nowrap; /* Prevents title from breaking */
-      overflow: hidden;
-      text-overflow: ellipsis; /* Appends ... if it overflows */
+      line-height: 1.3;
     }
     .album-year {
       font-family: var(--font-sans);
@@ -327,31 +313,11 @@
     .album-actions { 
       display: flex; 
       align-items: center; 
-      gap: 0.5rem; 
-      flex-wrap: nowrap; 
+      gap: 0.4rem; 
+      flex-wrap: wrap; 
       flex-shrink: 0; 
     }
 
-    .btn-zip, .btn-artist-donate, .btn-album-share {
-      background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      padding: 0.3rem 0.7rem;
-      font-size: 0.75rem;
-      font-weight: 500;
-      text-decoration: none;
-      border-radius: 4px;
-      transition: all 0.2s;
-      font-family: var(--font-sans);
-      cursor: pointer;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .btn-zip:hover, .btn-artist-donate:hover, .btn-album-share:hover { background: var(--accent); color: #000; }
-
-    /* TRACK ROWS */
     .track-list {
       padding: 0.5rem 1rem 1rem 1rem;
       border-top: 1px solid var(--border);
@@ -363,80 +329,112 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: nowrap; /* Forces one line */
-      gap: 0.6rem;
+      flex-wrap: wrap;
+      gap: 0.8rem;
       padding: 0.5rem 0.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* Stronger separator line */
       border-radius: 4px;
       transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .track-row:last-child { border-bottom: none; }
     
-    .track-info { 
-      flex: 1 1 0%; 
+    .track-title-wrap { 
+      flex: 1 1 150px;
       display: flex; 
       align-items: center; 
-      gap: 0.5rem; 
-      min-width: 60px; /* Protect song title visibility */
-      flex-wrap: nowrap; 
+      gap: 0.6rem; 
+      flex-wrap: wrap; 
+      min-width: 0;
     }
     .track-title { 
       font-family: var(--font-sans);
       font-weight: 500; 
       color: var(--text); 
       font-size: 0.95rem; 
-      white-space: nowrap; 
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .track-tag-badge {
-      font-size: 0.68rem;
-      padding: 0.08rem 0.35rem;
-      border-radius: 3px;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      font-family: var(--font-sans);
-      flex-shrink: 0;
     }
 
-    .track-controls { 
+    .track-controls-wrap { 
+      flex: 2 1 300px;
       display: flex; 
       align-items: center; 
-      gap: 0.5rem; 
-      flex-shrink: 0; 
-      flex-wrap: nowrap; 
+      gap: 0.6rem; 
+      flex-wrap: wrap; 
+      justify-content: flex-end;
     }
-    audio { width: 120px; height: 36px; border-radius: 4px; }
+    audio { 
+      width: 120px; 
+      height: 36px; 
+      border-radius: 4px; 
+    }
     
     .track-btn-group {
       display: flex;
       align-items: center;
       gap: 0.4rem;
       flex-shrink: 0;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
     }
-    
-    /* COMPACT ICON BUTTONS FOR TRACK ROWS (LOFI STYLE) */
-    .btn-download, .btn-share {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.35rem 0.75rem;
-      font-size: 0.75rem;
+
+    /* Mobile Play Button - Specific CSS */
+    .btn-mobile-play {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 0 0.8rem;
       border-radius: 4px;
-      white-space: nowrap;
-      cursor: pointer;
-      font-family: var(--font-sans);
-      transition: all 0.2s;
-      display: inline-flex;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-flex !important;
       align-items: center;
       justify-content: center;
+      height: 28px;
+      gap: 0.3rem;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      flex-direction: row !important; /* Force emoji and text onto same line */
     }
-    .btn-download:hover, .btn-share:hover { border-color: var(--text); color: var(--text); }
 
-    /* FLOATING NOW PLAYING BAR */
+    .mobile-only { display: none !important; }
+    .desktop-only { display: inline-flex !important; align-items: center; }
+
+    @media (max-width: 640px) {
+      .mobile-only { display: inline-flex !important; align-items: center; justify-content: center; }
+      .desktop-only { display: none !important; }
+      
+      /* Standardize equal height for mobile buttons & badges */
+      .btn-zip, 
+      .btn-album-share, 
+      .btn-download, 
+      .btn-share, 
+      .badge, 
+      .track-tag-badge,
+      .btn-mobile-play {
+        height: 34px !important;
+      }
+      
+      /* Specific square width limits for generic icon buttons (download/share on tracks) */
+      .btn-download, .btn-share {
+        width: 34px !important;
+        min-width: 34px !important;
+        padding: 0 !important;
+      }
+
+      .audio-player { 
+        display: none !important; 
+      }
+      
+      /* Force wraps to start from the left side on small screens */
+      .album-controls-wrap, .track-controls-wrap {
+        justify-content: flex-start !important;
+      }
+
+      .now-playing-bar {
+        padding: 0.5rem 0.8rem !important;
+        gap: 0.8rem !important;
+      }
+    } /* End of missing bracket section fix */
+
     .now-playing-bar {
       position: fixed;
       bottom: 0;
@@ -472,9 +470,9 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-      flex-shrink: 0;
     }
     .btn-np:hover { border-color: var(--accent); color: var(--accent); }
+    
     .btn-np-toggle {
       background: var(--accent);
       color: #000;
@@ -489,7 +487,6 @@
       align-items: center;
       justify-content: center;
       transition: background 0.2s;
-      flex-shrink: 0;
     }
     .btn-np-toggle:hover { background: var(--accent-hover); }
 
@@ -557,7 +554,6 @@
     }
     .btn-np-action:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* FOOTER & MODAL */
     footer {
       text-align: center;
       border-top: 1px solid var(--border);
@@ -729,20 +725,28 @@
     </div>
 
     <div class="np-side-actions">
-      <!-- "View Track" is the ONLY button that keeps full words on mobile -->
+      <!-- "View Track" is the ONLY button that keeps full words on mobile here -->
       <button class="btn-np-action" onclick="jumpToCurrentTrack()" title="Scroll to playing track">View Track</button>
       <!-- Download collapses to down arrow ↓ on mobile -->
-      <button class="btn-np-action download-label" onclick="downloadCurrentTrack()" title="Download MP3">
-        <span class="desktop-only">↓ MP3</span><span class="mobile-only">↓</span>
+      <button class="btn-np-action" onclick="downloadCurrentTrack()" title="Download MP3" style="width: 34px; padding: 0;" class="mobile-only">
+        <span class="desktop-only" style="display: none !important;">↓ MP3</span><span class="mobile-only" style="display:inline-flex !important;">↓</span>
       </button>
-      <!-- Share uses standard network SVG instead of link emoji -->
-      <button class="btn-np-action" onclick="shareCurrentTrack(this)" title="Share direct link">
-        <span class="desktop-only" style="display:inline-flex;align-items:center;gap:0.3rem;">
+      <button class="btn-np-action desktop-only" onclick="downloadCurrentTrack()" title="Download MP3">↓ MP3</button>
+      
+      <!-- Share uses standard network SVG -->
+      <button class="btn-np-action" onclick="shareCurrentTrack(this)" title="Share direct link" style="width: 34px; padding: 0;" class="mobile-only">
+        <span class="desktop-only" style="display: none !important;">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; top: 3px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           Share
         </span>
-        <span class="mobile-only" style="display:inline-flex;align-items:center;">
+        <span class="mobile-only" style="display:inline-flex !important;align-items:center;">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; top: 1px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </span>
+      </button>
+      <button class="btn-np-action desktop-only" onclick="shareCurrentTrack(this)" title="Share direct link">
+        <span style="display:inline-flex;align-items:center;gap:0.3rem;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; top: 3px;"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
         </span>
       </button>
     </div>
@@ -767,8 +771,9 @@
     let activeAudioEl = null;
 
     function toggleTrackRow(btn) {
-      const audioEl = btn.nextElementSibling;
-      if (audioEl && audioEl.tagName === 'AUDIO') {
+      const parentWrap = btn.closest('.track-controls-wrap');
+      const audioEl = parentWrap.querySelector('audio');
+      if (audioEl) {
         if (audioEl.paused) {
           audioEl.play();
         } else {
@@ -890,15 +895,15 @@
       const query = document.getElementById('site-search').value.toLowerCase().trim();
 
       document.querySelectorAll('.album-accordion').forEach(accordion => {
-        const albumTitle = accordion.querySelector('.album-title').textContent.toLowerCase();
+        const albumTitleWrap = accordion.querySelector('.album-title-wrap').textContent.toLowerCase();
         const tracks = accordion.querySelectorAll('.track-row');
-        let hasMatch = albumTitle.includes(query);
+        let hasMatch = albumTitleWrap.includes(query);
 
         tracks.forEach(track => {
           const trackTitle = track.querySelector('.track-title').textContent.toLowerCase();
-          const trackTag = track.querySelector('.track-tag-badge') ? track.querySelector('.track-tag-badge').textContent.toLowerCase() : '';
+          const trackTags = Array.from(track.querySelectorAll('.track-tag-badge')).map(b => b.textContent.toLowerCase()).join(' ');
 
-          if (trackTitle.includes(query) || trackTag.includes(query) || albumTitle.includes(query)) {
+          if (trackTitle.includes(query) || trackTags.includes(query) || albumTitleWrap.includes(query)) {
             track.style.display = 'flex';
             hasMatch = true;
           } else {
@@ -1228,7 +1233,7 @@
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'album-actions';
 
-            // ALBUM ZIP BUTTON (CLEANED TEXT ON DESKTOP, DOWN ARROW ON MOBILE)
+            // ALBUM ZIP BUTTON 
             if (albumData.zipUrl) {
               const zipBtn = document.createElement('a');
               zipBtn.className = 'btn-zip';
@@ -1246,7 +1251,7 @@
               loadDonateInfo(albumData.donateTxtUrl, actionsDiv);
             }
 
-            // ALBUM SHARE BUTTON (SVG on mobile & desktop instead of link emoji)
+            // ALBUM SHARE BUTTON
             const albumShareBtn = document.createElement('button');
             albumShareBtn.className = 'btn-album-share';
             albumShareBtn.innerHTML = `
@@ -1273,15 +1278,15 @@
               const trackSlug = slugify(`${albumName}-${track.title}`);
               row.id = `track-${trackSlug}`;
 
-              const tagHtml = track.tag ? `<span class="track-tag-badge">${track.tag}</span>` : '';
+              const tagHtml = track.tag ? `<div class="track-tag-container"><span class="track-tag-badge">${track.tag}</span></div>` : '';
 
               row.innerHTML = `
-                <div class="track-info">
+                <div class="track-title-wrap">
                   <span class="track-title">${track.title}</span>
                   ${tagHtml}
                 </div>
-                <div class="track-controls">
-                  <button class="btn-mobile-play mobile-only" onclick="toggleTrackRow(this)">▶</button>
+                <div class="track-controls-wrap">
+                  <button class="btn-mobile-play mobile-only" onclick="toggleTrackRow(this)">▶ Play</button>
                   <audio class="audio-player" controls preload="none">
                     <source src="${track.url}" type="audio/mpeg">
                   </audio>
@@ -1325,7 +1330,7 @@
 
               // Audio State Change Event Listeners
               audioEl.addEventListener('play', () => {
-                if (mobilePlayBtn) mobilePlayBtn.textContent = "⏸";
+                if (mobilePlayBtn) mobilePlayBtn.innerHTML = "⏸ Pause";
                 activeAudioEl = audioEl;
                 currentTrackIndex = globalTrackPool.indexOf(trackObj);
                 updateNowPlayingBar(trackObj);
@@ -1334,7 +1339,7 @@
               });
 
               audioEl.addEventListener('pause', () => {
-                if (mobilePlayBtn) mobilePlayBtn.textContent = "▶";
+                if (mobilePlayBtn) mobilePlayBtn.innerHTML = "▶ Play";
                 if (activeAudioEl === audioEl) {
                   document.getElementById('btn-np-toggle').textContent = "▶";
                 }
@@ -1367,11 +1372,17 @@
             titleWrap.innerHTML = `
               <span class="album-symbol">${symbol}</span>
               <span class="album-title">${albumName}</span>${yearHtml}
-              ${specialBadgeHtml}
             `;
 
+            const controlsWrap = document.createElement('div');
+            controlsWrap.className = 'album-controls-wrap';
+            if (albumTagContainerHtml) {
+              controlsWrap.insertAdjacentHTML('beforeend', albumTagContainerHtml);
+            }
+            controlsWrap.appendChild(actionsDiv);
+
             summaryEl.appendChild(titleWrap);
-            summaryEl.appendChild(actionsDiv);
+            summaryEl.appendChild(controlsWrap);
 
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
