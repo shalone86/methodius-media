@@ -7,6 +7,7 @@
   <title>Cyril & Methodius Media — Sacred Sound. Open Source.</title>
   <meta name="description" content="Free, 100% human-made sacred music rooted in Byzantine and Latin Catholic tradition, released under CC0 Public Domain for AMDG." />
   <link rel="canonical" href="https://methodius.media/" />
+  <link rel="manifest" href="/site.webmanifest" />
 
   <!-- Open Graph -->
   <meta property="og:url" content="https://methodius.media/" />
@@ -395,6 +396,7 @@
       font-family: var(--font-sans);
       white-space: nowrap;
       flex-direction: row !important;
+      flex-shrink: 0;
     }
 
     .mobile-only { display: none !important; }
@@ -778,8 +780,8 @@
     let activeAudioEl = null;
 
     function toggleTrackRow(btn) {
-      const parentWrap = btn.closest('.track-controls-wrap');
-      const audioEl = parentWrap.querySelector('audio');
+      const parentRow = btn.closest('.track-row');
+      const audioEl = parentRow ? parentRow.querySelector('audio') : null;
       if (audioEl) {
         if (audioEl.paused) {
           audioEl.play();
@@ -1302,11 +1304,11 @@
 
               row.innerHTML = `
                 <div class="track-title-wrap">
+                  <button class="btn-mobile-play mobile-only" onclick="toggleTrackRow(this)">▶ Play</button>
                   <span class="track-title">${track.title}</span>
                   ${tagHtml}
                 </div>
                 <div class="track-controls-wrap">
-                  <button class="btn-mobile-play mobile-only" onclick="toggleTrackRow(this)">▶ Play</button>
                   <audio class="audio-player" controls preload="none">
                     <source src="${track.url}" type="audio/mpeg">
                   </audio>
@@ -1433,6 +1435,15 @@
     window.addEventListener('hashchange', handleDeepLink);
 
     loadMusic();
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => {
+          console.error('Service Worker registration failed:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>
