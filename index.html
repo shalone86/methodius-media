@@ -303,7 +303,7 @@
       display: flex; 
       align-items: center; 
       gap: 0.6rem; 
-      flex-wrap: wrap; 
+      flex-wrap: nowrap; 
       min-width: 0; 
       flex: 1 1 200px; 
     }
@@ -325,6 +325,12 @@
       color: var(--text); 
       font-weight: 600;
       line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 1; /* Caps title to 1 line, hiding year if pushed to 2 */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
     }
     .album-year {
       font-family: var(--font-sans);
@@ -332,9 +338,8 @@
       font-weight: 175;
       color: var(--muted);
       font-style: italic;
-      margin-left: -0.3rem;
-      position: relative;
-      top: 1px; 
+      margin-left: 0.2rem;
+      white-space: nowrap;
       flex-shrink: 0;
     }
     .album-actions { 
@@ -1419,7 +1424,7 @@
             titleWrap.className = 'album-title-wrap';
             titleWrap.innerHTML = `
               <span class="album-symbol">${symbol}</span>
-              <span class="album-title">${albumName}</span>${yearHtml}
+              <span class="album-title" title="${albumName}">${albumName}${yearHtml ? ' ' + yearHtml : ''}</span>
             `;
 
             const controlsWrap = document.createElement('div');
