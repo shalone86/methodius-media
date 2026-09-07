@@ -48,6 +48,32 @@
       display: flex;
       flex-direction: column;
     }
+    @media (max-width: 640px) {
+  /* Prevent title and play button from breaking onto separate rows */
+  .track-title-wrap {
+    flex-wrap: nowrap !important;
+    overflow: hidden;
+  }
+
+  /* Keep title on up to 2 lines and truncate with ellipsis on line 2 */
+.track-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+  /* Prevent tag from stretching */
+  .track-tag-container {
+    flex-shrink: 0;
+  }
+  .track-tag-container {
+  display: none !important;
+}
+}
 
     .sticky-nav {
       position: sticky;
