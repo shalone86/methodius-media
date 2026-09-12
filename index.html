@@ -48,6 +48,19 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* COMPACT SEASONAL DONATION BANNER ABOVE NAV */
+    #seasonal-banner {
+      display: none;
+      position: relative;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--accent);
+      padding: 0.4rem 2rem 0.4rem 0.75rem;
+      text-align: center;
+      font-size: 0.8rem;
+      z-index: 200;
+    }
+
     @media (max-width: 640px) {
   /* Prevent title and play button from breaking onto separate rows */
   .track-title-wrap {
@@ -661,6 +674,56 @@
   </style>
 </head>
 <body>
+
+  <!-- SEASONAL DONATION BANNER ABOVE NAV -->
+  <div id="seasonal-banner">
+    <span id="seasonal-text"></span>
+    <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" style="color: var(--accent); font-weight: 600; text-decoration: underline; margin-left: 0.5rem; white-space: nowrap;">Support the Mission</a>
+    <button onclick="dismissSeasonalBanner()" style="background: transparent; border: none; color: var(--muted); cursor: pointer; position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; font-family: var(--font-sans); padding: 0.25rem;">×</button>
+  </div>
+
+  <script>
+    let currentSeasonKey = null;
+
+    function checkSeasonalBanner() {
+      const today = new Date();
+      const m = today.getMonth() + 1;
+      const d = today.getDate();
+
+      const isDateIn = (startM, startD, endM, endD) => {
+        if (startM === endM) return m === startM && d >= startD && d <= endD;
+        if (startM > endM) return (m === startM && d >= startD) || (m === endM && d <= endD);
+        return (m === startM && d >= startD) || (m === endM && d <= endD) || (m > startM && m < endM);
+      };
+
+      let season = null;
+      if (isDateIn(9, 8, 9, 15)) season = { id: "nativity", name: "the Nativity of the Theotokos" };
+      else if (isDateIn(12, 18, 1, 13)) season = { id: "christmas", name: "the Christmas season" };
+      else if (isDateIn(3, 25, 4, 1)) season = { id: "annunciation", name: "the Annunciation" };
+      else if (isDateIn(8, 6, 8, 13)) season = { id: "transfiguration", name: "the Transfiguration" };
+
+      if (season) {
+        currentSeasonKey = `dismissed_banner_${season.id}_${today.getFullYear()}`;
+        if (season.id === "christmas" && m === 1) {
+          currentSeasonKey = `dismissed_banner_christmas_${today.getFullYear() - 1}`;
+        }
+
+        if (!localStorage.getItem(currentSeasonKey)) {
+          document.getElementById('seasonal-text').textContent = `As we celebrate ${season.name}, please consider a one-time donation to support free Catholic media.`;
+          document.getElementById('seasonal-banner').style.display = 'block';
+        }
+      }
+    }
+
+    function dismissSeasonalBanner() {
+      document.getElementById('seasonal-banner').style.display = 'none';
+      if (currentSeasonKey) {
+        localStorage.setItem(currentSeasonKey, 'true');
+      }
+    }
+
+    checkSeasonalBanner();
+  </script>
 
   <nav class="sticky-nav">
     <a href="#catholic-lofi">Lofi</a>
