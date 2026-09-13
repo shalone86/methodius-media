@@ -1,4 +1,4 @@
-const CACHE_NAME = 'methodius-v1';
+const CACHE_NAME = 'methodius-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
