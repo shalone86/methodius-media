@@ -490,8 +490,24 @@
       }
 
       .now-playing-bar {
-        padding: 0.5rem 0.8rem !important;
+        padding: 0.9rem 0.8rem 0.5rem !important;
         gap: 0.8rem !important;
+        justify-content: space-between !important;
+      }
+
+      /* Collapsed mobile bar: hide title/progress (too small to read/use),
+         leaving just transport controls + action buttons. Everything
+         comes back once the bar is expanded via the handle. */
+      .np-center-info {
+        display: none !important;
+      }
+
+      .np-handle {
+        display: block !important;
+      }
+
+      body {
+        padding-bottom: 4rem !important;
       }
     }
 
@@ -613,6 +629,148 @@
       justify-content: center;
     }
     .btn-np-action:hover { border-color: var(--accent); color: var(--accent); }
+
+    .np-handle {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 18px;
+      cursor: pointer;
+    }
+    .np-handle::after {
+      content: "";
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 36px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+    }
+
+    .np-art-placeholder {
+      display: none;
+      width: 100%;
+      max-width: 200px;
+      aspect-ratio: 1;
+      margin: 0 auto;
+      border-radius: 12px;
+      background: linear-gradient(160deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.04));
+      border: 1px solid var(--border);
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      color: var(--accent);
+    }
+
+    @media (max-width: 640px) {
+      .now-playing-bar.expanded {
+        position: fixed;
+        inset: 0;
+        height: 100dvh;
+        z-index: 500;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
+        gap: 1.25rem;
+        overflow-y: auto;
+        background: rgba(15, 15, 17, 0.98);
+      }
+
+      .now-playing-bar.expanded .np-handle {
+        top: 0.5rem;
+      }
+
+      .now-playing-bar.expanded .np-art-placeholder {
+        display: flex;
+        order: 0;
+      }
+
+      .now-playing-bar.expanded .np-center-info {
+        display: flex !important;
+        flex: 0 0 auto;
+        order: 1;
+        gap: 0.75rem;
+      }
+
+      .now-playing-bar.expanded .np-meta-row {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.25rem;
+      }
+
+      .now-playing-bar.expanded .np-dot,
+      .now-playing-bar.expanded .np-symbol {
+        display: none;
+      }
+
+      .now-playing-bar.expanded .np-symbol {
+        font-size: 2rem;
+      }
+
+      .now-playing-bar.expanded .np-title {
+        font-size: 1.3rem;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+
+      .now-playing-bar.expanded .np-album {
+        font-size: 1rem;
+        white-space: normal;
+      }
+
+      .now-playing-bar.expanded .np-progress-bg {
+        height: 8px;
+      }
+
+      .now-playing-bar.expanded .np-controls {
+        order: 3;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .now-playing-bar.expanded .np-controls .btn-np {
+        width: 46px;
+        height: 46px;
+        font-size: 1.2rem;
+      }
+
+      .now-playing-bar.expanded .np-controls .btn-np-toggle {
+        width: 58px;
+        height: 58px;
+        font-size: 1.5rem;
+      }
+
+      .now-playing-bar.expanded .np-side-actions {
+        order: 4;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: auto;
+        padding-top: 1rem;
+      }
+
+      .now-playing-bar.expanded .np-side-actions .btn-np-action {
+        flex: 1;
+        justify-content: center;
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+      }
+
+      .now-playing-bar.expanded .btn-np-action .desktop-only {
+        display: inline-flex !important;
+      }
+
+      .now-playing-bar.expanded .btn-np-action .mobile-only {
+        display: none !important;
+      }
+    }
 
     footer {
       text-align: center;
@@ -813,6 +971,12 @@
   </div>
 
   <div class="now-playing-bar" id="now-playing-bar">
+    <div class="np-handle" onclick="toggleExpandedPlayer()" role="button" aria-label="Expand player" tabindex="0"></div>
+
+    <div class="np-art-placeholder">
+      <span id="np-art-symbol">✝</span>
+    </div>
+
     <div class="np-controls">
       <button class="btn-np" onclick="playPrevTrack()">⏮</button>
       <button class="btn-np-toggle" id="btn-np-toggle" onclick="toggleNowPlaying()">⏸</button>
@@ -823,7 +987,7 @@
       <div class="np-meta-row">
         <span class="np-symbol" id="np-symbol">✝</span>
         <span class="np-title" id="np-title">Track Name</span>
-        <span style="color: var(--border);">·</span>
+        <span class="np-dot" style="color: var(--border);">·</span>
         <span class="np-album" id="np-album">Album Name</span>
       </div>
       <div class="np-progress-row">
@@ -973,6 +1137,10 @@
 
     function toggleModal(show) {
       document.getElementById('permission-modal').style.display = show ? 'flex' : 'none';
+    }
+
+    function toggleExpandedPlayer() {
+      document.getElementById('now-playing-bar').classList.toggle('expanded');
     }
 
     function toTitleCase(str) {
@@ -1154,10 +1322,13 @@
     function updateNowPlayingBar(trackObj) {
       const bar = document.getElementById('now-playing-bar');
       const symbolEl = document.getElementById('np-symbol');
+      const artSymbolEl = document.getElementById('np-art-symbol');
       const titleEl = document.getElementById('np-title');
       const albumEl = document.getElementById('np-album');
 
-      symbolEl.textContent = IMPRINT_SYMBOLS[trackObj.imprintKey] || "✝";
+      const symbol = IMPRINT_SYMBOLS[trackObj.imprintKey] || "✝";
+      symbolEl.textContent = symbol;
+      artSymbolEl.textContent = symbol;
       titleEl.textContent = trackObj.title;
       albumEl.textContent = trackObj.albumName;
 
