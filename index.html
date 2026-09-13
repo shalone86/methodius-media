@@ -651,6 +651,36 @@
       background: var(--border);
     }
 
+    .np-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 450;
+    }
+    .np-backdrop.active {
+      display: block;
+    }
+
+    .np-close {
+      display: none;
+      position: absolute;
+      top: 0.85rem;
+      right: 0.85rem;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
     .np-art-placeholder {
       display: none;
       width: 100%;
@@ -669,20 +699,28 @@
     @media (max-width: 640px) {
       .now-playing-bar.expanded {
         position: fixed;
-        inset: 0;
-        height: 100dvh;
+        top: auto;
+        height: 68vh;
+        max-height: 68vh;
         z-index: 500;
         flex-direction: column;
         align-items: stretch;
         justify-content: flex-start;
+        border-radius: 18px 18px 0 0;
+        border-top: 1px solid var(--accent);
         padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
         gap: 1.25rem;
         overflow-y: auto;
         background: rgba(15, 15, 17, 0.98);
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
       }
 
       .now-playing-bar.expanded .np-handle {
         top: 0.5rem;
+      }
+
+      .now-playing-bar.expanded .np-close {
+        display: flex;
       }
 
       .now-playing-bar.expanded .np-art-placeholder {
@@ -970,8 +1008,12 @@
     </footer>
   </div>
 
+  <div class="np-backdrop" id="np-backdrop" onclick="closeExpandedPlayer()"></div>
+
   <div class="now-playing-bar" id="now-playing-bar">
     <div class="np-handle" onclick="toggleExpandedPlayer()" role="button" aria-label="Expand player" tabindex="0"></div>
+
+    <button class="np-close" onclick="closeExpandedPlayer()" aria-label="Close player">✕</button>
 
     <div class="np-art-placeholder">
       <span id="np-art-symbol">✝</span>
@@ -1141,6 +1183,12 @@
 
     function toggleExpandedPlayer() {
       document.getElementById('now-playing-bar').classList.toggle('expanded');
+      document.getElementById('np-backdrop').classList.toggle('active');
+    }
+
+    function closeExpandedPlayer() {
+      document.getElementById('now-playing-bar').classList.remove('expanded');
+      document.getElementById('np-backdrop').classList.remove('active');
     }
 
     function toTitleCase(str) {
@@ -1350,6 +1398,7 @@
 
     function jumpToCurrentTrack() {
       if (currentTrackIndex === -1 || !globalTrackPool[currentTrackIndex]) return;
+      closeExpandedPlayer();
       const trackObj = globalTrackPool[currentTrackIndex];
       playTrackByObj(trackObj);
     }

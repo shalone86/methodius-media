@@ -1,4 +1,4 @@
-const CACHE_NAME = 'methodius-v1';
+const CACHE_NAME = 'methodius-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -32,6 +32,22 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Network-first for the page shell itself (ensures deploys are visible
+  // immediately without needing a manual CACHE_NAME bump), falling back to
+  // the cached copy only when offline.
+  if (event.request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('/index.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          const clonedRes = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clonedRes));
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
 
   // Network-first for catalog metadata (ensures immediate visibility of new track uploads)
   if (url.pathname.endsWith('catalog.json')) {
