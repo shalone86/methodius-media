@@ -630,6 +630,11 @@
     }
     .btn-np-action:hover { border-color: var(--accent); color: var(--accent); }
 
+    .np-fullplayer-btn {
+      width: 34px;
+      padding: 0;
+    }
+
     .np-handle {
       display: none;
       position: absolute;
@@ -645,10 +650,11 @@
       top: 6px;
       left: 50%;
       transform: translateX(-50%);
-      width: 36px;
-      height: 4px;
-      border-radius: 2px;
-      background: var(--border);
+      width: 46px;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--muted);
+      opacity: 0.6;
     }
 
     .np-backdrop {
@@ -683,17 +689,25 @@
 
     .np-art-placeholder {
       display: none;
+      position: relative;
       width: 100%;
       max-width: 200px;
       aspect-ratio: 1;
       margin: 0 auto;
       border-radius: 12px;
+      overflow: hidden;
       background: linear-gradient(160deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.04));
       border: 1px solid var(--border);
       align-items: center;
       justify-content: center;
       font-size: 4rem;
       color: var(--accent);
+    }
+    .np-art-placeholder img {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     @media (max-width: 640px) {
@@ -705,11 +719,11 @@
         z-index: 500;
         flex-direction: column;
         align-items: stretch;
-        justify-content: flex-start;
+        justify-content: flex-start !important;
         border-radius: 18px 18px 0 0;
         border-top: 1px solid var(--accent);
-        padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px));
-        gap: 1.25rem;
+        padding: 2rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important;
+        gap: 1.25rem !important;
         overflow-y: auto;
         background: rgba(15, 15, 17, 0.98);
         box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
@@ -1015,7 +1029,8 @@
 
     <button class="np-close" onclick="closeExpandedPlayer()" aria-label="Close player">✕</button>
 
-    <div class="np-art-placeholder">
+    <div class="np-art-placeholder" id="np-art-placeholder">
+      <img id="np-art-img" alt="" />
       <span id="np-art-symbol">✝</span>
     </div>
 
@@ -1042,6 +1057,10 @@
     </div>
 
     <div class="np-side-actions">
+      <button class="btn-np-action np-fullplayer-btn mobile-only" onclick="toggleExpandedPlayer()" title="Full Player" aria-label="Open full player">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      </button>
+
       <button class="btn-np-action" onclick="jumpToCurrentTrack()" title="Scroll to playing track">View Track</button>
       
       <button class="btn-np-action" onclick="downloadCurrentTrack()" title="Download MP3">
@@ -1367,18 +1386,57 @@
       activeAudioEl.currentTime = (clickX / width) * duration;
     }
 
+    // Deterministic, liturgically-themed palette used as the art placeholder's
+    // background when an album has no real cover art yet. Same album always
+    // gets the same color, so it's visually stable across visits.
+    const ART_PALETTE = [
+      "212, 175, 55",  // gold
+      "150, 30, 45",   // liturgical red
+      "106, 27, 154",  // violet
+      "40, 94, 68",    // green
+      "58, 90, 140",   // deep blue
+      "176, 120, 60"   // rose gold
+    ];
+
+    function albumArtColor(seed) {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+      }
+      return ART_PALETTE[hash % ART_PALETTE.length];
+    }
+
+    function setNowPlayingArt(coverArtUrl, symbol, colorSeed) {
+      const placeholder = document.getElementById('np-art-placeholder');
+      const img = document.getElementById('np-art-img');
+      const symbolEl = document.getElementById('np-art-symbol');
+
+      if (coverArtUrl) {
+        img.onerror = () => setNowPlayingArt(null, symbol, colorSeed);
+        img.src = coverArtUrl;
+        img.style.display = 'block';
+        symbolEl.style.display = 'none';
+        placeholder.style.background = 'transparent';
+      } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        symbolEl.style.display = 'inline';
+        const rgb = albumArtColor(colorSeed);
+        placeholder.style.background = `linear-gradient(160deg, rgba(${rgb}, 0.28), rgba(${rgb}, 0.06))`;
+      }
+    }
+
     function updateNowPlayingBar(trackObj) {
       const bar = document.getElementById('now-playing-bar');
       const symbolEl = document.getElementById('np-symbol');
-      const artSymbolEl = document.getElementById('np-art-symbol');
       const titleEl = document.getElementById('np-title');
       const albumEl = document.getElementById('np-album');
 
       const symbol = IMPRINT_SYMBOLS[trackObj.imprintKey] || "✝";
       symbolEl.textContent = symbol;
-      artSymbolEl.textContent = symbol;
       titleEl.textContent = trackObj.title;
       albumEl.textContent = trackObj.albumName;
+      setNowPlayingArt(trackObj.coverArt, symbol, trackObj.albumName);
 
       bar.style.display = 'flex';
 
@@ -1485,13 +1543,17 @@
                                         .trim();
 
           if (!imprints[targetImprintKey][albumName]) {
-            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null, specialTag: albumSpecialTag, albumYear: albumYear };
+            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null, coverArt: null, specialTag: albumSpecialTag, albumYear: albumYear };
           } else if (albumSpecialTag && !imprints[targetImprintKey][albumName].specialTag) {
             imprints[targetImprintKey][albumName].specialTag = albumSpecialTag;
           }
 
           if (album.zipUrl) {
             imprints[targetImprintKey][albumName].zipUrl = `${MEDIA_BASE}/${encodeURI(album.zipUrl)}`;
+          }
+
+          if (album.coverArt) {
+            imprints[targetImprintKey][albumName].coverArt = `${MEDIA_BASE}/${encodeURI(album.coverArt)}`;
           }
 
           if (album.hasDonate) {
@@ -1655,6 +1717,7 @@
                 albumName: albumName,
                 url: track.url,
                 imprintKey: imprintKey,
+                coverArt: albumData.coverArt || null,
                 audioElement: audioEl,
                 accordion: details,
                 rowElement: row
