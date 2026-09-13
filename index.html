@@ -634,6 +634,9 @@
       width: 34px;
       padding: 0;
     }
+    .np-fullplayer-btn svg {
+      transition: transform 0.2s;
+    }
 
     .np-handle {
       display: none;
@@ -821,6 +824,10 @@
 
       .now-playing-bar.expanded .btn-np-action .mobile-only {
         display: none !important;
+      }
+
+      .now-playing-bar.expanded .np-fullplayer-btn svg {
+        transform: rotate(180deg);
       }
     }
 
