@@ -208,7 +208,7 @@
     .search-input:focus { border-color: var(--accent); }
     .search-input::placeholder { color: var(--muted); }
 
-    .badge, .track-tag-badge, .btn-zip, .btn-artist-donate, .btn-album-share, .btn-download, .btn-share {
+    .badge, .track-tag-badge, .btn-zip, .btn-artist-donate, .btn-album-share, .btn-download, .btn-share, .btn-queue {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -243,13 +243,14 @@
     }
     .btn-zip:hover, .btn-artist-donate:hover, .btn-album-share:hover { background: var(--accent); color: #000; }
 
-    .btn-download, .btn-share {
+    .btn-download, .btn-share, .btn-queue {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--muted);
       font-size: 0.75rem;
     }
-    .btn-download:hover, .btn-share:hover { border-color: var(--text); color: var(--text); }
+    .btn-download:hover, .btn-share:hover, .btn-queue:hover { border-color: var(--text); color: var(--text); }
+    .btn-queue.queued { border-color: var(--accent); color: var(--accent); }
 
     .album-tag-container, .track-tag-container {
       display: inline-flex;
@@ -466,6 +467,7 @@
       .btn-share .mobile-only,
       .btn-download .mobile-only,
       .btn-album-share .mobile-only,
+      .btn-queue .mobile-only,
       .btn-np-action .mobile-only {
         width: 100%;
         height: 100%;
@@ -473,20 +475,21 @@
         align-items: center;
         justify-content: center;
       }
-      
+
       /* Standardize equal height for mobile buttons & badges */
-      .btn-zip, 
-      .btn-album-share, 
-      .btn-download, 
-      .btn-share, 
-      .badge, 
+      .btn-zip,
+      .btn-album-share,
+      .btn-download,
+      .btn-share,
+      .btn-queue,
+      .badge,
       .track-tag-badge,
       .btn-mobile-play {
         height: 34px !important;
       }
-      
+
       /* Specific square width limits for generic icon buttons (download/share on tracks & album share) */
-      .btn-download, .btn-share, .btn-album-share {
+      .btn-download, .btn-share, .btn-album-share, .btn-queue {
         width: 34px !important;
         min-width: 34px !important;
         padding: 0 !important;
@@ -617,6 +620,74 @@
       width: 0%;
       transition: width 0.1s linear;
     }
+
+    .np-queue-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .np-queue-indicator .np-queue-clear {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+    .np-queue-toggle {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .np-queue-chevron { font-size: 0.6rem; transition: transform 0.15s; }
+    .np-queue-indicator.open .np-queue-chevron { transform: rotate(180deg); }
+
+    .np-queue-list {
+      list-style: none;
+      margin: 0.3rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      max-height: 140px;
+      overflow-y: auto;
+      width: 100%;
+    }
+    .np-queue-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text);
+    }
+    .np-queue-list .np-queue-title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .np-queue-list .np-queue-remove {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0 0.2rem;
+      flex-shrink: 0;
+    }
+    .np-queue-list .np-queue-remove:hover { color: var(--text); }
 
     .np-side-actions {
       display: flex;
@@ -1093,6 +1164,14 @@
         </div>
         <span class="np-time" id="np-time-dur">00:00</span>
       </div>
+      <div class="np-queue-indicator" id="np-queue-indicator" hidden>
+        <button class="np-queue-toggle" onclick="toggleQueuePanel()">
+          <span id="np-queue-count">Up next: 0 queued</span>
+          <span class="np-queue-chevron">▾</span>
+        </button>
+        <button class="np-queue-clear" onclick="clearQueue()">Clear</button>
+      </div>
+      <ul class="np-queue-list" id="np-queue-list" hidden></ul>
     </div>
 
     <div class="np-side-actions">
@@ -1136,6 +1215,7 @@
     let isShuffleActive = false;
     let currentTrackIndex = -1;
     let activeAudioEl = null;
+    let trackQueue = [];
 
     function toggleTrackRow(btn) {
       const parentRow = btn.closest('.track-row');
@@ -1388,7 +1468,65 @@
       }
     }
 
+    function toggleQueueTrack(track) {
+      const idx = trackQueue.indexOf(track);
+      if (idx === -1) {
+        trackQueue.push(track);
+      } else {
+        trackQueue.splice(idx, 1);
+      }
+      const btn = track.rowElement && track.rowElement.querySelector('.btn-queue');
+      if (btn) btn.classList.toggle('queued', idx === -1);
+      updateQueueIndicator();
+    }
+
+    function updateQueueIndicator() {
+      const indicator = document.getElementById('np-queue-indicator');
+      const count = document.getElementById('np-queue-count');
+      const list = document.getElementById('np-queue-list');
+      if (!indicator || !count || !list) return;
+
+      indicator.hidden = trackQueue.length === 0;
+      count.textContent = `Up next: ${trackQueue.length} queued`;
+
+      list.innerHTML = trackQueue.map((track, i) => `
+        <li><span class="np-queue-title">${track.title}</span><button class="np-queue-remove" data-idx="${i}" title="Remove from queue">×</button></li>
+      `).join('');
+      list.querySelectorAll('.np-queue-remove').forEach(btn => {
+        btn.addEventListener('click', () => toggleQueueTrack(trackQueue[parseInt(btn.dataset.idx, 10)]));
+      });
+
+      if (trackQueue.length === 0) {
+        list.hidden = true;
+        indicator.classList.remove('open');
+      }
+    }
+
+    function toggleQueuePanel() {
+      const list = document.getElementById('np-queue-list');
+      const indicator = document.getElementById('np-queue-indicator');
+      if (!list) return;
+      list.hidden = !list.hidden;
+      indicator.classList.toggle('open', !list.hidden);
+    }
+
+    function clearQueue() {
+      trackQueue.forEach(track => {
+        const btn = track.rowElement && track.rowElement.querySelector('.btn-queue');
+        if (btn) btn.classList.remove('queued');
+      });
+      trackQueue = [];
+      updateQueueIndicator();
+    }
+
     function playNextTrack() {
+      if (trackQueue.length > 0) {
+        const nextTrack = trackQueue[0];
+        toggleQueueTrack(nextTrack);
+        playTrackByObj(nextTrack);
+        return;
+      }
+
       const activePool = isShuffleActive && currentShufflePool.length > 0 ? currentShufflePool : globalTrackPool;
       if (activePool.length === 0) return;
 
@@ -1733,9 +1871,13 @@
                     <source src="${track.url}" type="audio/mpeg">
                   </audio>
                   <div class="track-btn-group">
-                    <button class="btn-download" 
-                            data-url="${track.url}" 
-                            data-filename="${track.title}.mp3" 
+                    <button class="btn-queue" title="Add to queue">
+                      <span class="desktop-only">+ Queue</span>
+                      <span class="mobile-only">+</span>
+                    </button>
+                    <button class="btn-download"
+                            data-url="${track.url}"
+                            data-filename="${track.title}.mp3"
                             onclick="triggerDirectDownload(event)"
                             title="Download MP3">
                       <span class="desktop-only">↓ MP3</span>
@@ -1768,7 +1910,13 @@
               };
 
               globalTrackPool.push(trackObj);
-              
+
+              const queueBtn = row.querySelector('.btn-queue');
+              queueBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleQueueTrack(trackObj);
+              });
+
               const mobilePlayBtn = row.querySelector('.btn-mobile-play');
 
               // Audio State Change Event Listeners
@@ -1779,6 +1927,11 @@
                 updateNowPlayingBar(trackObj);
                 document.getElementById('btn-np-toggle').textContent = "⏸";
                 history.replaceState(null, null, `#track-${trackSlug}`);
+
+                // A track that starts playing is no longer "up next" -- drop it
+                // from the queue whether it got here via the queue itself or was
+                // played directly while still queued.
+                if (trackQueue.includes(trackObj)) toggleQueueTrack(trackObj);
               });
 
               audioEl.addEventListener('pause', () => {
