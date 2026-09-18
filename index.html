@@ -1360,10 +1360,8 @@
       playTrackByObj(track);
     }
 
-    function playTrackByObj(track) {
+    function scrollToTrackRow(track) {
       if (!track) return;
-
-      document.querySelectorAll('audio').forEach(a => a.pause());
 
       if (track.accordion) {
         track.accordion.open = true;
@@ -1376,6 +1374,13 @@
           track.rowElement.style.background = 'transparent';
         }, 2500);
       }
+    }
+
+    function playTrackByObj(track) {
+      if (!track) return;
+
+      document.querySelectorAll('audio').forEach(a => a.pause());
+      scrollToTrackRow(track);
 
       if (track.audioElement) {
         track.audioElement.currentTime = 0;
@@ -1497,8 +1502,7 @@
     function jumpToCurrentTrack() {
       if (currentTrackIndex === -1 || !globalTrackPool[currentTrackIndex]) return;
       closeExpandedPlayer();
-      const trackObj = globalTrackPool[currentTrackIndex];
-      playTrackByObj(trackObj);
+      scrollToTrackRow(globalTrackPool[currentTrackIndex]);
     }
 
     function downloadCurrentTrack() {
