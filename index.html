@@ -638,20 +638,6 @@
       padding: 0;
       text-decoration: underline;
     }
-    .np-queue-toggle {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 0.72rem;
-      font-family: var(--font-sans);
-      cursor: pointer;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-    .np-queue-chevron { font-size: 0.6rem; transition: transform 0.15s; }
-    .np-queue-indicator.open .np-queue-chevron { transform: rotate(180deg); }
 
     .np-queue-list {
       list-style: none;
@@ -1172,10 +1158,7 @@
         <span class="np-time" id="np-time-dur">00:00</span>
       </div>
       <div class="np-queue-indicator" id="np-queue-indicator" hidden>
-        <button class="np-queue-toggle" onclick="toggleQueuePanel()">
-          <span id="np-queue-count">Up next: 0 queued</span>
-          <span class="np-queue-chevron">▾</span>
-        </button>
+        <span id="np-queue-count">Up next: 0 queued</span>
         <button class="np-queue-clear" onclick="clearQueue()">Clear</button>
       </div>
       <ul class="np-queue-list" id="np-queue-list" hidden></ul>
@@ -1493,7 +1476,9 @@
       const list = document.getElementById('np-queue-list');
       if (!indicator || !count || !list) return;
 
-      indicator.hidden = trackQueue.length === 0;
+      const hasQueue = trackQueue.length > 0;
+      indicator.hidden = !hasQueue;
+      list.hidden = !hasQueue;
       count.textContent = `Up next: ${trackQueue.length} queued`;
 
       list.innerHTML = trackQueue.map((track, i) => `
@@ -1502,19 +1487,6 @@
       list.querySelectorAll('.np-queue-remove').forEach(btn => {
         btn.addEventListener('click', () => toggleQueueTrack(trackQueue[parseInt(btn.dataset.idx, 10)]));
       });
-
-      if (trackQueue.length === 0) {
-        list.hidden = true;
-        indicator.classList.remove('open');
-      }
-    }
-
-    function toggleQueuePanel() {
-      const list = document.getElementById('np-queue-list');
-      const indicator = document.getElementById('np-queue-indicator');
-      if (!list) return;
-      list.hidden = !list.hidden;
-      indicator.classList.toggle('open', !list.hidden);
     }
 
     function clearQueue() {
