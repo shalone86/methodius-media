@@ -644,9 +644,8 @@
       margin: 0.3rem 0 0;
       padding: 0;
       flex-direction: column;
+      flex-shrink: 0;
       gap: 0.3rem;
-      max-height: 140px;
-      overflow-y: auto;
       width: 100%;
     }
     /* Only apply flex layout when the list isn't [hidden] -- an
@@ -813,8 +812,8 @@
       .now-playing-bar.expanded {
         position: fixed;
         top: auto;
-        height: 68vh;
-        max-height: 68vh;
+        height: 72vh;
+        max-height: 72vh;
         z-index: 500;
         flex-direction: column;
         align-items: stretch;
@@ -846,6 +845,7 @@
         flex: 0 0 auto;
         order: 1;
         gap: 0.75rem;
+        overflow: visible;
       }
 
       .now-playing-bar.expanded .np-meta-row {
@@ -853,6 +853,7 @@
         align-items: center;
         text-align: center;
         gap: 0.25rem;
+        overflow: visible;
       }
 
       .now-playing-bar.expanded .np-dot,
@@ -1206,6 +1207,7 @@
     let currentTrackIndex = -1;
     let activeAudioEl = null;
     let trackQueue = [];
+    const QUEUE_LIST_VISIBLE_MAX = 3;
 
     function toggleTrackRow(btn) {
       const parentRow = btn.closest('.track-row');
@@ -1481,7 +1483,10 @@
       list.hidden = !hasQueue;
       count.textContent = `Up next: ${trackQueue.length} queued`;
 
-      list.innerHTML = trackQueue.map((track, i) => `
+      // Show at most the first few -- growing the sheet to fit an unbounded
+      // queue (or scrolling inside it) isn't worth the complexity for what's
+      // meant to be a simple queue, not a full playlist view.
+      list.innerHTML = trackQueue.slice(0, QUEUE_LIST_VISIBLE_MAX).map((track, i) => `
         <li><span class="np-queue-title">${track.title}</span><button class="np-queue-remove" data-idx="${i}" title="Remove from queue">×</button></li>
       `).join('');
       list.querySelectorAll('.np-queue-remove').forEach(btn => {
