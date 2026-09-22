@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#121214" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Kids Player" />
+  <meta name="apple-mobile-web-app-title" content="Methodius Player" />
   <style>
     :root {
       --bg: #121214;
@@ -468,6 +468,14 @@
     audio.addEventListener('ended', playNextTrack);
 
     loadCatalog();
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/kids-sw.js', { scope: '/kids.html' }).catch(err => {
+          console.error('Kids Service Worker registration failed:', err);
+        });
+      });
+    }
   </script>
 </body>
 </html>

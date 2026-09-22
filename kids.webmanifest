@@ -1,8 +1,9 @@
 {
-  "name": "Kids Player",
-  "short_name": "Kids Player",
+  "name": "Methodius Media Player",
+  "short_name": "Methodius Player",
   "start_url": "/kids.html",
   "scope": "/kids.html",
+  "id": "/kids.html",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
