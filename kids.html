@@ -54,6 +54,7 @@
 
     .album-card { margin-bottom: 2rem; }
     .album-art {
+      position: relative;
       width: 100%;
       aspect-ratio: 1 / 1;
       border-radius: 14px;
@@ -63,9 +64,25 @@
       justify-content: center;
       margin-bottom: 0.75rem;
       border: 1px solid var(--border);
+      cursor: pointer;
     }
     .album-art-img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .album-art-symbol { font-size: 3rem; color: var(--accent); }
+    .album-art-play-overlay {
+      position: absolute;
+      bottom: 0.75rem;
+      right: 0.75rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.55);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      pointer-events: none;
+    }
     .album-name {
       font-size: 1.05rem;
       font-weight: 600;
@@ -143,7 +160,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
+      padding: 2rem 1.5rem calc(6rem + env(safe-area-inset-bottom, 0px));
       transform: translateY(100%);
       opacity: 0;
       transition: transform 0.3s ease, opacity 0.3s ease;
@@ -153,16 +170,20 @@
     .big-player.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
     .big-player-close {
       position: absolute;
-      top: calc(1.25rem + env(safe-area-inset-top, 0px));
+      bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
       left: 50%;
       transform: translateX(-50%);
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 1.8rem;
-      line-height: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 0.75rem 1.75rem;
       cursor: pointer;
-      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .big-player-art {
       width: min(75vw, 340px);
@@ -235,7 +256,7 @@
   </div>
 
   <div class="big-player" id="big-player">
-    <button class="big-player-close" onclick="collapseBigPlayer()" aria-label="Close">▾</button>
+    <button class="big-player-close" onclick="collapseBigPlayer()" aria-label="Close">✕ Close</button>
     <div class="big-player-art" id="big-player-art">
       <img id="big-art-img" class="album-art-img" alt="" style="display: none;" />
       <span id="big-art-symbol" class="album-art-symbol">✝</span>
@@ -279,6 +300,15 @@
       return `linear-gradient(160deg, rgba(${rgb}, 0.35), rgba(${rgb}, 0.08))`;
     }
 
+    // Strip embedded [sung]/[spoken] tags and [2026]-style year tags from
+    // catalog names -- kids just see the plain title, no badges.
+    function stripTags(raw) {
+      return (raw || "")
+        .replace(/\s*\[(sung|spoken)\]|\s*\((sung|spoken)\)/gi, '')
+        .replace(/\s*\[\d{4}\]|\s*\(\d{4}\)/g, '')
+        .trim();
+    }
+
     const audio = document.getElementById('audio');
     let songs = [];
     let albums = [];
@@ -292,13 +322,13 @@
           albums = [];
           catalogData.forEach(album => {
             if (!album.tracks || album.tracks.length === 0) return;
-            const albumName = album.albumName || "Songs";
+            const albumName = stripTags(album.albumName) || "Songs";
             const coverArt = album.coverArt ? `${MEDIA_BASE}/${encodeURI(album.coverArt)}` : null;
             const albumEntry = { name: albumName, coverArt, trackIndexes: [] };
             album.tracks.forEach(t => {
               albumEntry.trackIndexes.push(songs.length);
               songs.push({
-                title: t.title || "Untitled",
+                title: stripTags(t.title) || "Untitled",
                 album: albumName,
                 coverArt,
                 url: `${MEDIA_BASE}/${encodeURI(t.path)}`
@@ -322,6 +352,7 @@
 
       listEl.innerHTML = albums.map(album => {
         const bg = albumArtBackground(album.name);
+        const firstTrackIndex = album.trackIndexes[0];
         const artHtml = album.coverArt
           ? `<img class="album-art-img" src="${album.coverArt}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" />
              <span class="album-art-symbol" style="display: none;">✝</span>`
@@ -336,7 +367,10 @@
 
         return `
           <div class="album-card">
-            <div class="album-art" style="background: ${bg};">${artHtml}</div>
+            <div class="album-art" style="background: ${bg};" onclick="playTrackByIndex(${firstTrackIndex})">
+              ${artHtml}
+              <span class="album-art-play-overlay">▶</span>
+            </div>
             <div class="album-name">${album.name}</div>
             <div class="album-tracks">${tracksHtml}</div>
           </div>
