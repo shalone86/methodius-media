@@ -51,12 +51,25 @@
       margin-bottom: 1.5rem;
     }
     .btn-shuffle:hover { background: var(--accent-hover); }
-    .album-heading {
-      font-size: 1rem;
-      color: var(--muted);
-      margin: 1.5rem 0 0.5rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--border);
+
+    .album-card { margin-bottom: 2rem; }
+    .album-art {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border);
+    }
+    .album-art-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .album-art-symbol { font-size: 3rem; color: var(--accent); }
+    .album-name {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
     }
     .track-row {
       display: flex;
@@ -86,6 +99,8 @@
       display: none;
       align-items: center;
       gap: 0.75rem;
+      cursor: pointer;
+      z-index: 10;
     }
     .now-playing-bar.visible { display: flex; }
     .np-title {
@@ -119,6 +134,85 @@
       font-weight: bold;
       cursor: pointer;
     }
+
+    .big-player {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
+      transform: translateY(100%);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 50;
+    }
+    .big-player.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .big-player-close {
+      position: absolute;
+      top: calc(1.25rem + env(safe-area-inset-top, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.8rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+    }
+    .big-player-art {
+      width: min(75vw, 340px);
+      height: min(75vw, 340px);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .big-player-art .album-art-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .big-player-art .album-art-symbol { font-size: 5rem; color: var(--accent); }
+    .big-player-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.35rem;
+      padding: 0 1rem;
+    }
+    .big-player-album {
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding: 0 1rem;
+    }
+    .big-player-controls { display: flex; align-items: center; gap: 1.5rem; }
+    .btn-big {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+    .btn-big-toggle {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      font-size: 1.8rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body oncontextmenu="return false">
@@ -131,12 +225,27 @@
     </div>
   </div>
 
-  <div class="now-playing-bar" id="now-playing-bar">
+  <div class="now-playing-bar" id="now-playing-bar" onclick="expandBigPlayer()">
     <div class="np-title" id="np-title">—</div>
     <div class="np-controls">
-      <button class="btn-np" onclick="playPrevTrack()">⏮</button>
-      <button class="btn-np-toggle" id="btn-np-toggle" onclick="toggleNowPlaying()">⏸</button>
-      <button class="btn-np" onclick="playNextTrack()">⏭</button>
+      <button class="btn-np" onclick="event.stopPropagation(); playPrevTrack()">⏮</button>
+      <button class="btn-np-toggle" id="btn-np-toggle" onclick="event.stopPropagation(); toggleNowPlaying()">⏸</button>
+      <button class="btn-np" onclick="event.stopPropagation(); playNextTrack()">⏭</button>
+    </div>
+  </div>
+
+  <div class="big-player" id="big-player">
+    <button class="big-player-close" onclick="collapseBigPlayer()" aria-label="Close">▾</button>
+    <div class="big-player-art" id="big-player-art">
+      <img id="big-art-img" class="album-art-img" alt="" style="display: none;" />
+      <span id="big-art-symbol" class="album-art-symbol">✝</span>
+    </div>
+    <div class="big-player-title" id="big-player-title">—</div>
+    <div class="big-player-album" id="big-player-album"></div>
+    <div class="big-player-controls">
+      <button class="btn-big" onclick="playPrevTrack()">⏮</button>
+      <button class="btn-big-toggle" id="btn-big-toggle" onclick="toggleNowPlaying()">⏸</button>
+      <button class="btn-big" onclick="playNextTrack()">⏭</button>
     </div>
   </div>
 
@@ -146,8 +255,33 @@
     const MEDIA_BASE = "https://media.methodius.media";
     const CATALOG_URL = `${MEDIA_BASE}/catalog.json`;
 
+    // Deterministic placeholder color for albums with no cover art yet --
+    // same album always gets the same color.
+    const ART_PALETTE = [
+      "212, 175, 55",
+      "150, 30, 45",
+      "106, 27, 154",
+      "40, 94, 68",
+      "58, 90, 140",
+      "176, 120, 60"
+    ];
+
+    function albumArtColor(seed) {
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+      }
+      return ART_PALETTE[hash % ART_PALETTE.length];
+    }
+
+    function albumArtBackground(seed) {
+      const rgb = albumArtColor(seed);
+      return `linear-gradient(160deg, rgba(${rgb}, 0.35), rgba(${rgb}, 0.08))`;
+    }
+
     const audio = document.getElementById('audio');
     let songs = [];
+    let albums = [];
     let currentIndex = -1;
 
     function loadCatalog() {
@@ -155,17 +289,22 @@
         .then(res => res.json())
         .then(catalogData => {
           songs = [];
+          albums = [];
           catalogData.forEach(album => {
+            if (!album.tracks || album.tracks.length === 0) return;
             const albumName = album.albumName || "Songs";
-            if (album.tracks && album.tracks.length > 0) {
-              album.tracks.forEach(t => {
-                songs.push({
-                  title: t.title || "Untitled",
-                  album: albumName,
-                  url: `${MEDIA_BASE}/${encodeURI(t.path)}`
-                });
+            const coverArt = album.coverArt ? `${MEDIA_BASE}/${encodeURI(album.coverArt)}` : null;
+            const albumEntry = { name: albumName, coverArt, trackIndexes: [] };
+            album.tracks.forEach(t => {
+              albumEntry.trackIndexes.push(songs.length);
+              songs.push({
+                title: t.title || "Untitled",
+                album: albumName,
+                coverArt,
+                url: `${MEDIA_BASE}/${encodeURI(t.path)}`
               });
-            }
+            });
+            albums.push(albumEntry);
           });
           renderTracks();
         })
@@ -181,21 +320,61 @@
         return;
       }
 
-      let html = '';
-      let lastAlbum = null;
-      songs.forEach((song, i) => {
-        if (song.album !== lastAlbum) {
-          html += `<div class="album-heading">${song.album}</div>`;
-          lastAlbum = song.album;
-        }
-        html += `
+      listEl.innerHTML = albums.map(album => {
+        const bg = albumArtBackground(album.name);
+        const artHtml = album.coverArt
+          ? `<img class="album-art-img" src="${album.coverArt}" alt="" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';" />
+             <span class="album-art-symbol" style="display: none;">✝</span>`
+          : `<span class="album-art-symbol">✝</span>`;
+
+        const tracksHtml = album.trackIndexes.map(i => `
           <div class="track-row" id="track-row-${i}" onclick="playTrackByIndex(${i})">
-            <span class="track-title">${song.title}</span>
+            <span class="track-title">${songs[i].title}</span>
             <span class="track-play-icon">▶</span>
           </div>
+        `).join('');
+
+        return `
+          <div class="album-card">
+            <div class="album-art" style="background: ${bg};">${artHtml}</div>
+            <div class="album-name">${album.name}</div>
+            <div class="album-tracks">${tracksHtml}</div>
+          </div>
         `;
-      });
-      listEl.innerHTML = html;
+      }).join('');
+    }
+
+    function setBigPlayerArt(song) {
+      const artEl = document.getElementById('big-player-art');
+      const img = document.getElementById('big-art-img');
+      const symbol = document.getElementById('big-art-symbol');
+
+      artEl.style.background = albumArtBackground(song.album);
+
+      if (song.coverArt) {
+        img.onerror = () => { img.style.display = 'none'; symbol.style.display = 'inline'; };
+        img.src = song.coverArt;
+        img.style.display = 'block';
+        symbol.style.display = 'none';
+      } else {
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        symbol.style.display = 'inline';
+      }
+    }
+
+    function updateToggleIcons(icon) {
+      document.getElementById('btn-np-toggle').textContent = icon;
+      document.getElementById('btn-big-toggle').textContent = icon;
+    }
+
+    function expandBigPlayer() {
+      if (currentIndex === -1) return;
+      document.getElementById('big-player').classList.add('visible');
+    }
+
+    function collapseBigPlayer() {
+      document.getElementById('big-player').classList.remove('visible');
     }
 
     function playTrackByIndex(i) {
@@ -208,12 +387,18 @@
       }
 
       currentIndex = i;
-      audio.src = songs[i].url;
+      const song = songs[i];
+      audio.src = song.url;
       audio.play();
 
-      document.getElementById('np-title').textContent = songs[i].title;
+      document.getElementById('np-title').textContent = song.title;
       document.getElementById('now-playing-bar').classList.add('visible');
-      document.getElementById('btn-np-toggle').textContent = '⏸';
+
+      document.getElementById('big-player-title').textContent = song.title;
+      document.getElementById('big-player-album').textContent = song.album;
+      setBigPlayerArt(song);
+
+      expandBigPlayer();
     }
 
     function playRandomTrack() {
@@ -244,12 +429,8 @@
       }
     }
 
-    audio.addEventListener('play', () => {
-      document.getElementById('btn-np-toggle').textContent = '⏸';
-    });
-    audio.addEventListener('pause', () => {
-      document.getElementById('btn-np-toggle').textContent = '▶';
-    });
+    audio.addEventListener('play', () => updateToggleIcons('⏸'));
+    audio.addEventListener('pause', () => updateToggleIcons('▶'));
     audio.addEventListener('ended', playNextTrack);
 
     loadCatalog();
