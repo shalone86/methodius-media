@@ -49,6 +49,8 @@
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Visible outline for keyboard users only (mouse clicks don't trigger it). */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-sans);
@@ -124,6 +126,22 @@
     }
     .sticky-nav a:hover { color: var(--accent); }
 
+    /* On phones the nav used to wrap onto two rows, covering the top of
+       whatever album was scrolled to. Tighten it so it fits on one row. */
+    @media (max-width: 640px) {
+      .sticky-nav {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.7rem 0.6rem;
+      }
+      .sticky-nav a { white-space: nowrap; font-size: 0.72rem; }
+    }
+    @media (max-width: 400px) {
+      .sticky-nav { gap: 0.25rem; padding: 0.7rem 0.4rem; }
+      .sticky-nav a { font-size: 0.64rem; }
+    }
+
     .container {
       max-width: 850px;
       margin: 0 auto;
@@ -133,9 +151,15 @@
     }
 
     header {
-      padding: 3rem 0 1.5rem 0;
+      padding: 4rem 1rem 2.5rem 1rem;
       text-align: center;
+      /* Darkened so the gold text stays readable, fading into --bg at the
+         bottom so the image has no hard edge. */
+      background:
+        linear-gradient(to bottom, rgba(18, 18, 20, 0.72), rgba(18, 18, 20, 0.82) 70%, var(--bg)),
+        url('/hero.jpg') 70% 35% / cover no-repeat;
     }
+    .site-title { text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6); }
     .site-title { 
       font-family: var(--font-heading);
       font-size: 2.1rem; 
@@ -324,6 +348,20 @@
       flex-wrap: wrap;
     }
     .album-summary::-webkit-details-marker { display: none; }
+    /* Small chevron so it's clear albums open; rotates when expanded. */
+    .album-title-wrap::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(-45deg);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      margin-right: 0.15rem;
+    }
+    .album-accordion[open] .album-title-wrap::before { transform: rotate(45deg); }
+    .album-summary:hover .album-title-wrap::before { border-color: var(--accent); }
     
     .album-title-wrap { 
       display: flex; 
@@ -344,6 +382,14 @@
     }
 
     .album-symbol { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
+    .album-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
     
     .album-title { 
       font-family: var(--font-serif);
@@ -395,6 +441,13 @@
       transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
     }
     .track-row:last-child { border-bottom: none; }
+    /* Persistent marker for the track that's currently loaded, so it's
+       easy to find again after scrolling away. */
+    .track-row.playing {
+      box-shadow: inset 3px 0 0 var(--accent);
+      background: rgba(212, 175, 55, 0.06);
+    }
+    .track-row.playing .track-title { color: var(--accent); }
     
     .track-title-wrap { 
       flex: 1 1 150px;
@@ -621,8 +674,12 @@
       transition: width 0.1s linear;
     }
 
-    .np-queue-indicator {
+    /* :not([hidden]) for the same reason as .np-queue-list below --
+       otherwise "Up next: 0 queued" shows even with an empty queue. */
+    .np-queue-indicator:not([hidden]) {
       display: flex;
+    }
+    .np-queue-indicator {
       align-items: center;
       gap: 0.5rem;
       font-size: 0.72rem;
@@ -1049,22 +1106,22 @@
     <a href="https://pod.link/aHR0cHM6Ly9tZWRpYS5tZXRob2RpdXMubWVkaWEvcG9kY2FzdC54bWw?view=apps&sort=popularity">Podcast</a>
   </nav>
 
-  <div class="container">
-    <header>
-      <h1 class="site-title">✝ Cyril & Methodius Media</h1>
-      <p class="hero-mission">
-        Free, sacred music, made by humans, rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
-      </p>
-      <div class="hero-actions">
-        <button class="btn-shuffle" onclick="triggerShuffle(event)">🔀 Start Shuffle Radio</button>
-        <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" class="btn-donate">✝ Support Mission</a>
-      </div>
-      
-      <div class="search-wrapper">
-        <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" />
-      </div>
-    </header>
+  <header>
+    <h1 class="site-title">✝ Cyril & Methodius Media</h1>
+    <p class="hero-mission">
+      Free, sacred music, made by humans, rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
+    </p>
+    <div class="hero-actions">
+      <button class="btn-shuffle" onclick="triggerShuffle(event)">🔀 Start Shuffle Radio</button>
+      <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" class="btn-donate">✝ Support Mission</a>
+    </div>
+    
+    <div class="search-wrapper">
+      <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" />
+    </div>
+  </header>
 
+  <div class="container">
     <main>
       <section class="imprint-section" id="catholic-lofi">
         <div class="imprint-header">
@@ -1441,7 +1498,7 @@
         track.rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         track.rowElement.style.background = 'rgba(212, 175, 55, 0.2)';
         setTimeout(() => {
-          track.rowElement.style.background = 'transparent';
+          track.rowElement.style.background = '';
         }, 2500);
       }
     }
@@ -1901,6 +1958,10 @@
               // Audio State Change Event Listeners
               audioEl.addEventListener('play', () => {
                 if (mobilePlayBtn) mobilePlayBtn.innerHTML = "⏸ Pause";
+                if (activeAudioEl && activeAudioEl !== audioEl) {
+                  activeAudioEl.closest('.track-row').classList.remove('playing');
+                }
+                row.classList.add('playing');
                 activeAudioEl = audioEl;
                 currentTrackIndex = globalTrackPool.indexOf(trackObj);
                 updateNowPlayingBar(trackObj);
@@ -1948,6 +2009,19 @@
               <span class="album-symbol">${symbol}</span>
               <span class="album-title" title="${albumName}">${albumName}${yearHtml ? ' ' + yearHtml : ''}</span>
             `;
+
+            // Show the cover as a thumbnail when there is one, falling back
+            // to the imprint symbol if the image fails to load.
+            if (albumData.coverArt) {
+              const symbolEl = titleWrap.querySelector('.album-symbol');
+              const thumb = document.createElement('img');
+              thumb.className = 'album-thumb';
+              thumb.src = albumData.coverArt;
+              thumb.alt = '';
+              thumb.loading = 'lazy';
+              thumb.onerror = () => thumb.replaceWith(symbolEl);
+              symbolEl.replaceWith(thumb);
+            }
 
             const controlsWrap = document.createElement('div');
             controlsWrap.className = 'album-controls-wrap';
