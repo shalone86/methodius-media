@@ -621,8 +621,12 @@
       transition: width 0.1s linear;
     }
 
-    .np-queue-indicator {
+    /* :not([hidden]) for the same reason as .np-queue-list below --
+       otherwise "Up next: 0 queued" shows even with an empty queue. */
+    .np-queue-indicator:not([hidden]) {
       display: flex;
+    }
+    .np-queue-indicator {
       align-items: center;
       gap: 0.5rem;
       font-size: 0.72rem;
