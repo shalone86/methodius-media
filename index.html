@@ -124,6 +124,22 @@
     }
     .sticky-nav a:hover { color: var(--accent); }
 
+    /* On phones the nav used to wrap onto two rows, covering the top of
+       whatever album was scrolled to. Keep it to one row that scrolls
+       sideways, with a fade on the right hinting there's more. */
+    @media (max-width: 640px) {
+      .sticky-nav {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
+        mask-image: linear-gradient(to right, #000 85%, transparent);
+      }
+      .sticky-nav::-webkit-scrollbar { display: none; }
+      .sticky-nav a { white-space: nowrap; flex-shrink: 0; }
+    }
+
     .container {
       max-width: 850px;
       margin: 0 auto;
