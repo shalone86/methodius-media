@@ -294,46 +294,60 @@
 
     /* NEWEST SONG CARD in the hero, above search (filled from the podcast
        feed; stays hidden if the feed can't be loaded or matched to a track) */
-    .newest-card {
+    .newest-card:not([hidden]) {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
       max-width: 500px;
-      margin: 2rem auto 0;
+      margin: 1.75rem auto 0;
+      padding: 0.55rem 0.9rem 0.55rem 0.6rem;
       text-align: left;
       background: rgba(27, 27, 30, 0.88);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--accent);
-      border-radius: 6px;
-      padding: 1.1rem 1.25rem;
+      border-radius: 999px;
     }
+    .newest-play {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent);
+      color: #000;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .newest-play:hover { background: var(--accent-hover); }
+    .newest-text { min-width: 0; flex: 1; }
     .newest-label {
-      font-size: 0.72rem;
+      font-size: 0.65rem;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--accent);
     }
     .newest-date { color: var(--muted); font-weight: 400; }
-    .newest-title {
+    /* Song name doubles as the "view in album" link. */
+    .newest-song {
+      display: block;
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+      color: var(--text);
       font-family: var(--font-serif);
-      font-size: 1.45rem;
+      font-size: 1.1rem;
       font-weight: 600;
-      line-height: 1.25;
-      margin-top: 0.3rem;
+      line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .newest-title .album-symbol { margin-right: 0.35rem; }
-    .newest-meta {
-      font-family: var(--font-serif);
-      font-style: italic;
-      color: var(--muted);
-      font-size: 1rem;
-    }
-    .newest-actions {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-top: 0.9rem;
-    }
-    .newest-actions .btn-shuffle { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
-    .newest-actions .btn-section-shuffle { padding: 0.5rem 1rem; }
+    .newest-song:hover #newest-title { color: var(--accent); }
+    .newest-album { color: var(--muted); font-style: italic; font-weight: 500; font-size: 0.95rem; }
     .newest-card:not([hidden]) + .search-wrapper { margin-top: 1rem; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
@@ -1163,12 +1177,10 @@
     </div>
 
     <section class="newest-card" id="newest-card" hidden>
-      <div class="newest-label">Newest song <span class="newest-date" id="newest-date"></span></div>
-      <div class="newest-title"><span class="album-symbol" id="newest-symbol"></span><span id="newest-title"></span></div>
-      <div class="newest-meta" id="newest-meta"></div>
-      <div class="newest-actions">
-        <button class="btn-shuffle" id="newest-play">▶ Play</button>
-        <button class="btn-section-shuffle" id="newest-view">View in album</button>
+      <button class="newest-play" id="newest-play" aria-label="Play newest song">▶</button>
+      <div class="newest-text">
+        <div class="newest-label">Newest <span class="newest-date" id="newest-date"></span></div>
+        <button class="newest-song" id="newest-view" title="View in album"><span id="newest-title"></span> <span class="newest-album" id="newest-meta"></span></button>
       </div>
     </section>
 
@@ -2119,10 +2131,8 @@
 
         document.getElementById('newest-date').textContent =
           '· ' + newest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-        document.getElementById('newest-symbol').textContent = IMPRINT_SYMBOLS[track.imprintKey] || '✝';
         document.getElementById('newest-title').textContent = track.title;
-        const genre = document.querySelector(`#${track.imprintKey} h2`)?.textContent || '';
-        document.getElementById('newest-meta').textContent = genre ? `${track.albumName} · ${genre}` : track.albumName;
+        document.getElementById('newest-meta').textContent = `· ${track.albumName}`;
 
         // Play it, then keep going with a shuffle of the same genre (the
         // song is often the latest track on an unfinished album, so "rest
