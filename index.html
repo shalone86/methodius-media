@@ -2095,20 +2095,27 @@
     // entry there is the newest song, whichever album it belongs to.
     async function loadNewestSong() {
       try {
-        const res = await fetch(`${MEDIA_BASE}/podcast.xml`);
-        if (!res.ok) return;
-        const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
+        // The query string gives the site its own Cloudflare cache entry for
+        // the feed. Podcast apps fetch the plain URL without an Origin
+        // header, and a copy cached from one of those can lack the CORS
+        // header a browser needs to read it.
+        const res = await fetch(`${MEDIA_BASE}/podcast.xml?from=site`);
+        if (!res.ok) return console.warn('Newest song: feed returned', res.status);
+        const feed = await res.text();
 
+        // Read the feed with simple patterns rather than a strict XML parser,
+        // so one stray character elsewhere in the feed can't break it.
         let newest = null;
-        xml.querySelectorAll('item').forEach(item => {
-          const date = new Date(item.querySelector('pubDate')?.textContent || '');
-          if (isNaN(date)) return;
-          if (!newest || date > newest.date) newest = { item, date };
-        });
-        if (!newest) return;
+        for (const [item] of feed.matchAll(/<item[\s>][\s\S]*?<\/item>/g)) {
+          const date = new Date((item.match(/<pubDate>([^<]*)<\/pubDate>/) || [])[1]);
+          const url = (item.match(/<enclosure[^>]*\burl="([^"]*)"/) || [])[1];
+          if (isNaN(date) || !url) continue;
+          if (!newest || date > newest.date) newest = { date, url };
+        }
+        if (!newest) return console.warn('Newest song: no dated entries in feed');
 
-        const track = findTrackForFeedItem(newest.item);
-        if (!track) return;
+        const track = findTrackByFileUrl(newest.url);
+        if (!track) return console.warn('Newest song: no track on the page for', newest.url);
 
         document.getElementById('newest-date').textContent =
           '· ' + newest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -2129,32 +2136,21 @@
 
         document.getElementById('newest-card').hidden = false;
       } catch (e) {
-        // Feed missing or unreadable -- just leave the card hidden.
+        console.warn('Newest song: could not load feed', e);
       }
     }
 
-    // Match a feed entry to a track on the page by its audio file, falling
-    // back to the song title if the links are written differently.
-    function findTrackForFeedItem(item) {
-      const normalize = url => {
-        try { return decodeURIComponent(new URL(url, MEDIA_BASE).pathname); } catch (e) { return url; }
+    // The feed's file links are written raw (spaces, brackets) while the
+    // page's are percent-encoded, so compare decoded, lowercased paths.
+    function findTrackByFileUrl(url) {
+      const normalize = u => {
+        const decoded = u.replace(/&amp;/g, '&');
+        let path;
+        try { path = decodeURIComponent(new URL(decoded, MEDIA_BASE).pathname); } catch (e) { path = decoded; }
+        return path.toLowerCase();
       };
-      const enclosureUrl = item.querySelector('enclosure')?.getAttribute('url');
-      if (enclosureUrl) {
-        const path = normalize(enclosureUrl);
-        const byFile = globalTrackPool.find(t => normalize(t.url) === path);
-        if (byFile) return byFile;
-      }
-
-      // Feed titles may add the album name, so accept a track title found
-      // inside the feed title. Prefer one whose album is named there too
-      // (same song title on two albums), then the longest title.
-      const feedTitle = (item.querySelector('title')?.textContent || '').toLowerCase();
-      if (!feedTitle) return null;
-      const score = t => (feedTitle.includes(t.albumName.toLowerCase()) ? 1000 : 0) + t.title.length;
-      return globalTrackPool
-        .filter(t => t.title && feedTitle.includes(t.title.toLowerCase()))
-        .sort((a, b) => score(b) - score(a))[0] || null;
+      const target = normalize(url);
+      return globalTrackPool.find(t => normalize(t.url) === target) || null;
     }
 
     function setupContinuousPlayback() {
