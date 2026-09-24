@@ -126,22 +126,6 @@
     }
     .sticky-nav a:hover { color: var(--accent); }
 
-    /* On phones the nav used to wrap onto two rows, covering the top of
-       whatever album was scrolled to. Tighten it so it fits on one row. */
-    @media (max-width: 640px) {
-      .sticky-nav {
-        flex-wrap: nowrap;
-        justify-content: space-between;
-        gap: 0.5rem;
-        padding: 0.7rem 0.6rem;
-      }
-      .sticky-nav a { white-space: nowrap; font-size: 0.72rem; }
-    }
-    @media (max-width: 400px) {
-      .sticky-nav { gap: 0.25rem; padding: 0.7rem 0.4rem; }
-      .sticky-nav a { font-size: 0.64rem; }
-    }
-
     .container {
       max-width: 850px;
       margin: 0 auto;
@@ -382,14 +366,6 @@
     }
 
     .album-symbol { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
-    .album-thumb {
-      width: 40px;
-      height: 40px;
-      border-radius: 4px;
-      object-fit: cover;
-      border: 1px solid var(--border);
-      flex-shrink: 0;
-    }
     
     .album-title { 
       font-family: var(--font-serif);
@@ -577,6 +553,10 @@
       body {
         padding-bottom: 4rem !important;
       }
+
+      /* The sticky nav wraps to two rows on phones, so leave room for it
+         when an opened album scrolls to the top. */
+      .album-accordion { scroll-margin-top: 100px; }
     }
 
     .now-playing-bar {
@@ -2009,19 +1989,6 @@
               <span class="album-symbol">${symbol}</span>
               <span class="album-title" title="${albumName}">${albumName}${yearHtml ? ' ' + yearHtml : ''}</span>
             `;
-
-            // Show the cover as a thumbnail when there is one, falling back
-            // to the imprint symbol if the image fails to load.
-            if (albumData.coverArt) {
-              const symbolEl = titleWrap.querySelector('.album-symbol');
-              const thumb = document.createElement('img');
-              thumb.className = 'album-thumb';
-              thumb.src = albumData.coverArt;
-              thumb.alt = '';
-              thumb.loading = 'lazy';
-              thumb.onerror = () => thumb.replaceWith(symbolEl);
-              symbolEl.replaceWith(thumb);
-            }
 
             const controlsWrap = document.createElement('div');
             controlsWrap.className = 'album-controls-wrap';
