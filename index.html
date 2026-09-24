@@ -330,6 +330,20 @@
       flex-wrap: wrap;
     }
     .album-summary::-webkit-details-marker { display: none; }
+    /* Small chevron so it's clear albums open; rotates when expanded. */
+    .album-title-wrap::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(-45deg);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      margin-right: 0.15rem;
+    }
+    .album-accordion[open] .album-title-wrap::before { transform: rotate(45deg); }
+    .album-summary:hover .album-title-wrap::before { border-color: var(--accent); }
     
     .album-title-wrap { 
       display: flex; 
