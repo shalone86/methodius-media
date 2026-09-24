@@ -1,9 +1,12 @@
-const CACHE_NAME = 'methodius-v3';
+const CACHE_NAME = 'methodius-v4';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/site.webmanifest',
-  '/favicon.svg'
+  '/favicon.svg',
+  '/fonts/cinzel.woff2',
+  '/fonts/cormorant-garamond.woff2',
+  '/fonts/cormorant-garamond-italic.woff2'
 ];
 
 self.addEventListener('install', (event) => {
