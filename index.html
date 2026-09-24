@@ -291,6 +291,47 @@
     }
 
     .imprint-section { margin-top: 2.5rem; }
+
+    /* NEWEST SONG CARD (filled from the podcast feed; stays hidden if the
+       feed can't be loaded or matched to a track) */
+    .newest-card {
+      margin-top: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 1.1rem 1.25rem;
+    }
+    .newest-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .newest-date { color: var(--muted); font-weight: 400; }
+    .newest-title {
+      font-family: var(--font-serif);
+      font-size: 1.45rem;
+      font-weight: 600;
+      line-height: 1.25;
+      margin-top: 0.3rem;
+    }
+    .newest-title .album-symbol { margin-right: 0.35rem; }
+    .newest-meta {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .newest-actions {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 0.9rem;
+    }
+    .newest-actions .btn-shuffle { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
+    .newest-actions .btn-section-shuffle { padding: 0.5rem 1rem; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
       padding-bottom: 0.5rem;
@@ -1125,6 +1166,16 @@
 
   <div class="container">
     <main>
+      <section class="newest-card" id="newest-card" hidden>
+        <div class="newest-label">Newest song <span class="newest-date" id="newest-date"></span></div>
+        <div class="newest-title"><span class="album-symbol" id="newest-symbol"></span><span id="newest-title"></span></div>
+        <div class="newest-meta" id="newest-meta"></div>
+        <div class="newest-actions">
+          <button class="btn-shuffle" id="newest-play">▶ Play</button>
+          <button class="btn-section-shuffle" id="newest-view">View in album</button>
+        </div>
+      </section>
+
       <section class="imprint-section" id="catholic-lofi">
         <div class="imprint-header">
           <div class="imprint-header-text">
@@ -2029,11 +2080,78 @@
         });
 
         setupContinuousPlayback();
+        loadNewestSong();
         handleDeepLink();
 
       } catch (err) {
         console.error("Error fetching tracks from Cloudflare R2:", err);
       }
+    }
+
+    // Every upload gets a dated entry in the podcast feed, so the newest
+    // entry there is the newest song, whichever album it belongs to.
+    async function loadNewestSong() {
+      try {
+        const res = await fetch(`${MEDIA_BASE}/podcast.xml`);
+        if (!res.ok) return;
+        const xml = new DOMParser().parseFromString(await res.text(), 'application/xml');
+
+        let newest = null;
+        xml.querySelectorAll('item').forEach(item => {
+          const date = new Date(item.querySelector('pubDate')?.textContent || '');
+          if (isNaN(date)) return;
+          if (!newest || date > newest.date) newest = { item, date };
+        });
+        if (!newest) return;
+
+        const track = findTrackForFeedItem(newest.item);
+        if (!track) return;
+
+        document.getElementById('newest-date').textContent =
+          '· ' + newest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        document.getElementById('newest-symbol').textContent = IMPRINT_SYMBOLS[track.imprintKey] || '✝';
+        document.getElementById('newest-title').textContent = track.title;
+        const genre = document.querySelector(`#${track.imprintKey} h2`)?.textContent || '';
+        document.getElementById('newest-meta').textContent = genre ? `${track.albumName} · ${genre}` : track.albumName;
+
+        // Play it, then keep going with a shuffle of the same genre (the
+        // song is often the latest track on an unfinished album, so "rest
+        // of the album" would usually have nothing left to play).
+        document.getElementById('newest-play').onclick = () => {
+          currentShufflePool = globalTrackPool.filter(t => t.imprintKey === track.imprintKey);
+          isShuffleActive = true;
+          playTrackByObj(track);
+        };
+        document.getElementById('newest-view').onclick = () => scrollToTrackRow(track);
+
+        document.getElementById('newest-card').hidden = false;
+      } catch (e) {
+        // Feed missing or unreadable -- just leave the card hidden.
+      }
+    }
+
+    // Match a feed entry to a track on the page by its audio file, falling
+    // back to the song title if the links are written differently.
+    function findTrackForFeedItem(item) {
+      const normalize = url => {
+        try { return decodeURIComponent(new URL(url, MEDIA_BASE).pathname); } catch (e) { return url; }
+      };
+      const enclosureUrl = item.querySelector('enclosure')?.getAttribute('url');
+      if (enclosureUrl) {
+        const path = normalize(enclosureUrl);
+        const byFile = globalTrackPool.find(t => normalize(t.url) === path);
+        if (byFile) return byFile;
+      }
+
+      // Feed titles may add the album name, so accept a track title found
+      // inside the feed title. Prefer one whose album is named there too
+      // (same song title on two albums), then the longest title.
+      const feedTitle = (item.querySelector('title')?.textContent || '').toLowerCase();
+      if (!feedTitle) return null;
+      const score = t => (feedTitle.includes(t.albumName.toLowerCase()) ? 1000 : 0) + t.title.length;
+      return globalTrackPool
+        .filter(t => t.title && feedTitle.includes(t.title.toLowerCase()))
+        .sort((a, b) => score(b) - score(a))[0] || null;
     }
 
     function setupContinuousPlayback() {
