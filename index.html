@@ -49,6 +49,8 @@
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Visible outline for keyboard users only (mouse clicks don't trigger it). */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     html { scroll-behavior: smooth; }
     body {
       font-family: var(--font-sans);
