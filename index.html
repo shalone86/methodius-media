@@ -127,19 +127,19 @@
     .sticky-nav a:hover { color: var(--accent); }
 
     /* On phones the nav used to wrap onto two rows, covering the top of
-       whatever album was scrolled to. Keep it to one row that scrolls
-       sideways, with a fade on the right hinting there's more. */
+       whatever album was scrolled to. Tighten it so it fits on one row. */
     @media (max-width: 640px) {
       .sticky-nav {
         flex-wrap: nowrap;
-        justify-content: flex-start;
-        overflow-x: auto;
-        scrollbar-width: none;
-        -webkit-mask-image: linear-gradient(to right, #000 85%, transparent);
-        mask-image: linear-gradient(to right, #000 85%, transparent);
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.7rem 0.6rem;
       }
-      .sticky-nav::-webkit-scrollbar { display: none; }
-      .sticky-nav a { white-space: nowrap; flex-shrink: 0; }
+      .sticky-nav a { white-space: nowrap; font-size: 0.72rem; }
+    }
+    @media (max-width: 400px) {
+      .sticky-nav { gap: 0.25rem; padding: 0.7rem 0.4rem; }
+      .sticky-nav a { font-size: 0.64rem; }
     }
 
     .container {
