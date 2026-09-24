@@ -292,11 +292,13 @@
 
     .imprint-section { margin-top: 2.5rem; }
 
-    /* NEWEST SONG CARD (filled from the podcast feed; stays hidden if the
-       feed can't be loaded or matched to a track) */
+    /* NEWEST SONG CARD in the hero, above search (filled from the podcast
+       feed; stays hidden if the feed can't be loaded or matched to a track) */
     .newest-card {
-      margin-top: 2rem;
-      background: var(--card-bg);
+      max-width: 500px;
+      margin: 2rem auto 0;
+      text-align: left;
+      background: rgba(27, 27, 30, 0.88);
       border: 1px solid var(--border);
       border-left: 3px solid var(--accent);
       border-radius: 6px;
@@ -332,6 +334,7 @@
     }
     .newest-actions .btn-shuffle { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
     .newest-actions .btn-section-shuffle { padding: 0.5rem 1rem; }
+    .newest-card:not([hidden]) + .search-wrapper { margin-top: 1rem; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
       padding-bottom: 0.5rem;
@@ -1158,7 +1161,17 @@
       <button class="btn-shuffle" onclick="triggerShuffle(event)">🔀 Start Shuffle Radio</button>
       <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" class="btn-donate">✝ Support Mission</a>
     </div>
-    
+
+    <section class="newest-card" id="newest-card" hidden>
+      <div class="newest-label">Newest song <span class="newest-date" id="newest-date"></span></div>
+      <div class="newest-title"><span class="album-symbol" id="newest-symbol"></span><span id="newest-title"></span></div>
+      <div class="newest-meta" id="newest-meta"></div>
+      <div class="newest-actions">
+        <button class="btn-shuffle" id="newest-play">▶ Play</button>
+        <button class="btn-section-shuffle" id="newest-view">View in album</button>
+      </div>
+    </section>
+
     <div class="search-wrapper">
       <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" />
     </div>
@@ -1166,16 +1179,6 @@
 
   <div class="container">
     <main>
-      <section class="newest-card" id="newest-card" hidden>
-        <div class="newest-label">Newest song <span class="newest-date" id="newest-date"></span></div>
-        <div class="newest-title"><span class="album-symbol" id="newest-symbol"></span><span id="newest-title"></span></div>
-        <div class="newest-meta" id="newest-meta"></div>
-        <div class="newest-actions">
-          <button class="btn-shuffle" id="newest-play">▶ Play</button>
-          <button class="btn-section-shuffle" id="newest-view">View in album</button>
-        </div>
-      </section>
-
       <section class="imprint-section" id="catholic-lofi">
         <div class="imprint-header">
           <div class="imprint-header-text">
