@@ -810,12 +810,43 @@
     .np-queue-list li {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
+      gap: 0.4rem;
       font-size: 0.75rem;
       color: var(--text);
+      border-radius: 4px;
     }
+    /* Drag handle for reordering. touch-action: none keeps a finger drag
+       on the handle from scrolling the page or the player sheet. */
+    .np-queue-list .np-queue-grip {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: grab;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .np-queue-list .np-queue-grip:hover,
+    .np-queue-list .np-queue-grip:focus-visible { color: var(--text); }
+    .np-queue-list.reordering li { transition: transform 0.15s ease; }
+    .np-queue-list.reordering li.dragging {
+      transition: none;
+      position: relative;
+      z-index: 1;
+      background: var(--card-bg);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      cursor: grabbing;
+    }
+    .np-queue-list.reordering li.dragging .np-queue-grip { cursor: grabbing; color: var(--accent); }
     .np-queue-list .np-queue-title {
+      flex: 1;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1131,6 +1162,12 @@
         box-shadow: none;
       }
       .now-playing-bar.expanded .np-sleep-options button { min-height: 44px; }
+
+      /* Finger-sized queue rows in the phone sheet. */
+      .now-playing-bar.expanded .np-queue-list { max-height: 220px; gap: 0; }
+      .now-playing-bar.expanded .np-queue-list li { min-height: 44px; font-size: 0.9rem; }
+      .now-playing-bar.expanded .np-queue-list .np-queue-grip { width: 40px; height: 44px; margin-left: -0.6rem; }
+      .now-playing-bar.expanded .np-queue-list .np-queue-remove { min-width: 44px; min-height: 44px; font-size: 1.2rem; }
     }
 
     @keyframes np-sheet-in {
@@ -1641,6 +1678,7 @@
     function setupSheetGestures() {
       const bar = document.getElementById('now-playing-bar');
       const backdrop = document.getElementById('np-backdrop');
+      const queueList = document.getElementById('np-queue-list');
       let drag = null;
 
       bar.addEventListener('touchstart', (e) => {
@@ -1651,15 +1689,17 @@
           startY: touch.clientY,
           startTime: Date.now(),
           expanded: bar.classList.contains('expanded'),
-          atTop: bar.scrollTop <= 0,
-          onSeekBar: !!e.target.closest('.np-progress-bg'),
+          // A scrolled queue list scrolls back up before the sheet moves.
+          atTop: bar.scrollTop <= 0 && !(e.target.closest('.np-queue-list') && queueList.scrollTop > 0),
+          // The seek bar and queue handles have drags of their own.
+          ownGesture: !!e.target.closest('.np-progress-bg, .np-queue-grip'),
           active: false,
           dy: 0
         };
       }, { passive: true });
 
       bar.addEventListener('touchmove', (e) => {
-        if (!drag || drag.onSeekBar) return;
+        if (!drag || drag.ownGesture) return;
         const touch = e.touches[0];
         const dx = touch.clientX - drag.startX;
         const dy = touch.clientY - drag.startY;
@@ -1951,11 +1991,103 @@
       list.hidden = !hasQueue;
       count.textContent = `Up next: ${trackQueue.length} queued`;
 
-      list.innerHTML = trackQueue.map((track, i) => `
-        <li><span class="np-queue-title">${track.title}</span><button class="np-queue-remove" data-idx="${i}" title="Remove from queue">×</button></li>
-      `).join('');
-      list.querySelectorAll('.np-queue-remove').forEach(btn => {
-        btn.addEventListener('click', () => toggleQueueTrack(trackQueue[parseInt(btn.dataset.idx, 10)]));
+      list.replaceChildren(...trackQueue.map((track) => {
+        const li = document.createElement('li');
+
+        const grip = document.createElement('button');
+        grip.type = 'button';
+        grip.className = 'np-queue-grip';
+        grip.title = 'Drag to reorder';
+        grip.setAttribute('aria-label', `Move ${track.title}. Drag, or use the up and down arrow keys.`);
+        grip.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+
+        const title = document.createElement('span');
+        title.className = 'np-queue-title';
+        title.textContent = track.title;
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'np-queue-remove';
+        remove.title = 'Remove from queue';
+        remove.setAttribute('aria-label', `Remove ${track.title} from the queue`);
+        remove.textContent = '×';
+        remove.addEventListener('click', () => toggleQueueTrack(track));
+
+        li.append(grip, title, remove);
+        return li;
+      }));
+    }
+
+    function moveQueueItem(from, to) {
+      if (from === to || to < 0 || to >= trackQueue.length) return;
+      const [track] = trackQueue.splice(from, 1);
+      trackQueue.splice(to, 0, track);
+      updateQueueIndicator();
+    }
+
+    // Drag a queued song by its handle to reorder it. Pointer events cover
+    // mouse and touch alike. The handle also takes the up and down arrow
+    // keys, for keyboards and screen readers.
+    function setupQueueDrag() {
+      const list = document.getElementById('np-queue-list');
+      let drag = null;
+
+      list.addEventListener('pointerdown', (e) => {
+        const grip = e.target.closest('.np-queue-grip');
+        if (!grip || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        e.preventDefault();
+        const items = [...list.children];
+        const li = grip.closest('li');
+        const from = items.indexOf(li);
+        const step = items.length > 1 ? items[1].offsetTop - items[0].offsetTop : li.offsetHeight;
+        drag = { pointerId: e.pointerId, li, items, from, to: from, step, startY: e.clientY, startScroll: list.scrollTop };
+        grip.setPointerCapture(e.pointerId);
+        list.classList.add('reordering');
+        li.classList.add('dragging');
+      });
+
+      list.addEventListener('pointermove', (e) => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        // Scroll a long queue when the song is dragged to its top or bottom edge.
+        const box = list.getBoundingClientRect();
+        if (e.clientY < box.top + 16) list.scrollTop -= 6;
+        else if (e.clientY > box.bottom - 16) list.scrollTop += 6;
+
+        const dy = e.clientY - drag.startY + (list.scrollTop - drag.startScroll);
+        drag.li.style.transform = `translateY(${dy}px)`;
+        const to = Math.max(0, Math.min(drag.items.length - 1, Math.round(drag.from + dy / drag.step)));
+        if (to === drag.to) return;
+        drag.to = to;
+        drag.items.forEach((item, i) => {
+          if (item === drag.li) return;
+          let shift = 0;
+          if (drag.from < to && i > drag.from && i <= to) shift = -drag.step;
+          if (drag.from > to && i >= to && i < drag.from) shift = drag.step;
+          item.style.transform = shift ? `translateY(${shift}px)` : '';
+        });
+      });
+
+      const endDrag = (e) => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        const { li, from, to } = drag;
+        drag = null;
+        list.classList.remove('reordering');
+        // If a song ended mid-drag the list was redrawn, so skip the move.
+        if (li.isConnected && from !== to) moveQueueItem(from, to);
+        else updateQueueIndicator();
+      };
+      list.addEventListener('pointerup', endDrag);
+      list.addEventListener('pointercancel', endDrag);
+
+      list.addEventListener('keydown', (e) => {
+        const grip = e.target.closest('.np-queue-grip');
+        if (!grip || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+        e.preventDefault();
+        const from = [...list.children].indexOf(grip.closest('li'));
+        const to = from + (e.key === 'ArrowUp' ? -1 : 1);
+        if (to < 0 || to >= trackQueue.length) return;
+        moveQueueItem(from, to);
+        list.children[to].querySelector('.np-queue-grip').focus();
       });
     }
 
@@ -2527,6 +2659,7 @@
     window.addEventListener('hashchange', handleDeepLink);
 
     setupSheetGestures();
+    setupQueueDrag();
     loadMusic();
 
     // PWA Service Worker Registration
