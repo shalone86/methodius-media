@@ -2304,16 +2304,17 @@
       const header = document.createElement('div');
       header.className = 'album-hero';
 
-      if (albumData.coverArt) {
+      const cover = albumData.coverThumb || albumData.coverArt;
+      if (cover) {
         const backdrop = document.createElement('img');
         backdrop.className = 'album-hero-bg';
-        backdrop.src = albumData.coverArt;
+        backdrop.src = cover;
         backdrop.alt = '';
         backdrop.loading = 'lazy';
         backdrop.onerror = () => backdrop.remove();
         header.appendChild(backdrop);
       }
-      header.appendChild(albumArtTile(albumData.coverArt, symbol, albumName, 'album-cover-lg'));
+      header.appendChild(albumArtTile(cover, symbol, albumName, 'album-cover-lg'));
 
       const count = albumData.tracks.length;
       const info = document.createElement('div');
@@ -2492,6 +2493,10 @@
 
           if (album.coverArt) {
             imprints[targetImprintKey][albumName].coverArt = `${MEDIA_BASE}/${encodeURI(album.coverArt)}`;
+          }
+          // Small copy made by the catalog script, for the album list.
+          if (album.coverThumb) {
+            imprints[targetImprintKey][albumName].coverThumb = `${MEDIA_BASE}/${encodeURI(album.coverThumb)}`;
           }
 
           if (album.hasDonate) {
@@ -2737,7 +2742,7 @@
             }
             controlsWrap.appendChild(actionsDiv);
 
-            summaryEl.appendChild(albumArtTile(albumData.coverArt, symbol, albumName, 'album-thumb'));
+            summaryEl.appendChild(albumArtTile(albumData.coverThumb || albumData.coverArt, symbol, albumName, 'album-thumb'));
             summaryEl.appendChild(titleWrap);
             summaryEl.appendChild(controlsWrap);
 
