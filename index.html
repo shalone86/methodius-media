@@ -65,11 +65,21 @@
       --muted: #a1a1aa;
       --accent: #d4af37;
       --accent-hover: #f1c40f;
+      --hero-tint: 18, 18, 20;
       --purple-badge: #c084fc;
       --font-heading: 'Cinzel', Georgia, serif;
       --font-serif: 'Cormorant Garamond', Georgia, serif;
       --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
+    /* Byzantine liturgical seasons (set on <html> by the script in <head>).
+       Gold is the everyday color; each accent stays light enough for the
+       black text on accent-colored buttons. */
+    html[data-season="nativity-fast"],
+    html[data-season="lent"] { --accent: #b39ae6; --accent-hover: #c9b6f0; --hero-tint: 30, 20, 48; }
+    html[data-season="nativity"] { --accent: #efe4c6; --accent-hover: #fbf4e0; --hero-tint: 34, 32, 26; }
+    html[data-season="pascha"] { --accent: #e8636e; --accent-hover: #f08790; --hero-tint: 46, 16, 20; }
+    html[data-season="pentecost"] { --accent: #74c486; --accent-hover: #93d4a1; --hero-tint: 16, 38, 24; }
+    html[data-season="dormition"] { --accent: #85b6ea; --accent-hover: #a5caf2; --hero-tint: 16, 28, 48; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     /* Visible outline for keyboard users only (mouse clicks don't trigger it). */
     :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -162,8 +172,30 @@
       /* Darkened so the gold text stays readable, fading into --bg at the
          bottom so the image has no hard edge. */
       background:
-        linear-gradient(to bottom, rgba(18, 18, 20, 0.72), rgba(18, 18, 20, 0.82) 70%, var(--bg)),
+        linear-gradient(to bottom, rgba(var(--hero-tint), 0.72), rgba(var(--hero-tint), 0.82) 70%, var(--bg)),
         url('/hero.jpg') 70% 35% / cover no-repeat;
+    }
+    .season-label:not([hidden]) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin: -0.25rem 0 0.9rem;
+      font-family: var(--font-heading);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+    }
+    .season-label::before,
+    .season-label::after {
+      content: "";
+      width: 1.75rem;
+      height: 1px;
+      background: var(--accent);
+      opacity: 0.7;
     }
     .site-title { text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6); }
     .site-title { 
@@ -445,7 +477,113 @@
       justify-content: flex-end;
     }
 
-    .album-symbol { color: var(--accent); font-size: 1.1rem; flex-shrink: 0; }
+    .album-art {
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: var(--accent);
+    }
+    .album-art img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .album-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 5px;
+      font-size: 1.1rem;
+    }
+
+    .btn-album-play,
+    .btn-album-shuffle {
+      height: 38px;
+      padding: 0 0.95rem;
+      border-radius: 4px;
+      font-family: var(--font-sans);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn-album-play { border: none; background: var(--accent); color: #000; }
+    .btn-album-play:hover { background: var(--accent-hover); }
+    .btn-album-shuffle {
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: transparent;
+      color: var(--text);
+    }
+    .btn-album-shuffle:hover { border-color: var(--text); }
+
+    /* Opened album: the header row becomes a box with a large cover over a
+       blurred copy of itself, plus the song count and Play and Shuffle. */
+    .album-backdrop,
+    .album-meta,
+    .album-play-actions { display: none; }
+    .album-accordion[open] .album-summary {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      column-gap: 1.1rem;
+      row-gap: 0.55rem;
+      align-items: center;
+      align-content: center;
+    }
+    .album-accordion[open] .album-backdrop {
+      display: block;
+      position: absolute;
+      inset: -40px;
+      width: calc(100% + 80px);
+      height: calc(100% + 80px);
+      object-fit: cover;
+      filter: blur(24px) saturate(1.2);
+      opacity: 0.5;
+    }
+    .album-accordion[open] .album-summary::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(18, 18, 20, 0.4), rgba(18, 18, 20, 0.85));
+    }
+    .album-accordion[open] .album-summary > :not(.album-backdrop) { position: relative; z-index: 1; }
+    .album-accordion[open] .album-thumb {
+      grid-column: 1;
+      grid-row: 1 / span 4;
+      width: 140px;
+      height: 140px;
+      border-radius: 8px;
+      font-size: 3rem;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
+    }
+    .album-accordion[open] .album-title-wrap,
+    .album-accordion[open] .album-controls-wrap,
+    .album-accordion[open] .album-meta,
+    .album-accordion[open] .album-play-actions { grid-column: 2; }
+    .album-accordion[open] .album-controls-wrap { justify-content: flex-start; }
+    .album-accordion[open] .album-meta { display: block; font-size: 0.85rem; font-weight: 400; color: #c9c9cf; }
+    .album-accordion[open] .album-play-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    @media (max-width: 640px) {
+      /* Cover on the left, spanning the title line and the buttons under it. */
+      .album-summary {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        column-gap: 0.85rem;
+        row-gap: 0.5rem;
+      }
+      .album-thumb { grid-row: span 2; width: 72px; height: 72px; border-radius: 6px; font-size: 1.6rem; }
+      .album-summary .album-title { -webkit-line-clamp: 2; }
+      .album-accordion[open] .album-summary { column-gap: 0.9rem; padding: 0.9rem; }
+      .album-accordion[open] .album-thumb { width: 112px; height: 112px; font-size: 2.4rem; align-self: start; }
+    }
     
     .album-title { 
       font-family: var(--font-serif);
@@ -502,6 +640,7 @@
     .track-row.playing {
       box-shadow: inset 3px 0 0 var(--accent);
       background: rgba(212, 175, 55, 0.06);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
     }
     .track-row.playing .track-title { color: var(--accent); }
     
@@ -777,12 +916,43 @@
     .np-queue-list li {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
+      gap: 0.4rem;
       font-size: 0.75rem;
       color: var(--text);
+      border-radius: 4px;
     }
+    /* Drag handle for reordering. touch-action: none keeps a finger drag
+       on the handle from scrolling the page or the player sheet. */
+    .np-queue-list .np-queue-grip {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: grab;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .np-queue-list .np-queue-grip:hover,
+    .np-queue-list .np-queue-grip:focus-visible { color: var(--text); }
+    .np-queue-list.reordering li { transition: transform 0.15s ease; }
+    .np-queue-list.reordering li.dragging {
+      transition: none;
+      position: relative;
+      z-index: 1;
+      background: var(--card-bg);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      cursor: grabbing;
+    }
+    .np-queue-list.reordering li.dragging .np-queue-grip { cursor: grabbing; color: var(--accent); }
     .np-queue-list .np-queue-title {
+      flex: 1;
+      min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -823,13 +993,59 @@
     }
     .btn-np-action:hover { border-color: var(--accent); color: var(--accent); }
 
-    .np-fullplayer-btn {
-      width: 34px;
-      padding: 0;
+    .np-sleep-btn { gap: 0.35rem; }
+    .np-sleep-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* Sleep timer: a popover above the bar on desktop (opened by the Sleep
+       button), a row inside the pulled-up player on phones. */
+    .np-sleep {
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
     }
-    .np-fullplayer-btn svg {
-      transition: transform 0.2s;
+    .np-sleep.open {
+      display: flex;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 1.2rem;
+      width: 320px;
+      padding: 0.8rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
     }
+    .np-sleep-label {
+      font-family: var(--font-heading);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .np-sleep-options { display: flex; gap: 0.4rem; }
+    .np-sleep-options button {
+      flex: 1;
+      min-height: 38px;
+      padding: 0 0.4rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .np-sleep-options button:hover { border-color: var(--accent); }
+    .np-sleep-options button[aria-pressed="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #000;
+    }
+    .np-sleep-status { font-size: 0.78rem; color: var(--muted); }
 
     .np-handle {
       display: none;
@@ -893,6 +1109,7 @@
       border-radius: 12px;
       overflow: hidden;
       background: linear-gradient(160deg, rgba(212, 175, 55, 0.18), rgba(212, 175, 55, 0.04));
+      background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent) 4%, transparent));
       border: 1px solid var(--border);
       align-items: center;
       justify-content: center;
@@ -930,9 +1147,10 @@
       .now-playing-bar.expanded {
         position: fixed;
         top: auto;
-        height: 68vh;
-        max-height: 68vh;
+        max-height: 88vh;
         z-index: 500;
+        animation: np-sheet-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overscroll-behavior: contain;
         flex-direction: column;
         align-items: stretch;
         justify-content: flex-start !important;
@@ -1017,7 +1235,7 @@
       }
 
       .now-playing-bar.expanded .np-side-actions {
-        order: 4;
+        order: 5;
         justify-content: center;
         gap: 0.75rem;
         margin-top: auto;
@@ -1039,9 +1257,28 @@
         display: none !important;
       }
 
-      .now-playing-bar.expanded .np-fullplayer-btn svg {
-        transform: rotate(180deg);
+      .now-playing-bar.expanded .np-sleep {
+        display: flex;
+        order: 4;
+        position: static;
+        width: auto;
+        padding: 0;
+        background: none;
+        border: none;
+        box-shadow: none;
       }
+      .now-playing-bar.expanded .np-sleep-options button { min-height: 44px; }
+
+      /* Finger-sized queue rows in the phone sheet. */
+      .now-playing-bar.expanded .np-queue-list { max-height: 220px; gap: 0; }
+      .now-playing-bar.expanded .np-queue-list li { min-height: 44px; font-size: 0.9rem; }
+      .now-playing-bar.expanded .np-queue-list .np-queue-grip { width: 40px; height: 44px; margin-left: -0.6rem; }
+      .now-playing-bar.expanded .np-queue-list .np-queue-remove { min-width: 44px; min-height: 44px; font-size: 1.2rem; }
+    }
+
+    @keyframes np-sheet-in {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
     }
 
     footer {
@@ -1102,6 +1339,54 @@
       color: #000;
     }
   </style>
+  <script>
+    // Pascha by the Gregorian computus, as Byzantine Catholic churches in the
+    // U.S. keep it (Anonymous Gregorian algorithm).
+    function gregorianPascha(year) {
+      const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+      const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const month = Math.floor((h + l - 7 * m + 114) / 31);
+      const day = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(year, month - 1, day);
+    }
+
+    function byzantineSeason(date) {
+      const today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const fromPascha = Math.round((today - gregorianPascha(today.getFullYear())) / 86400000);
+      const m = today.getMonth() + 1, d = today.getDate();
+
+      if (fromPascha >= -48 && fromPascha <= -8) return { id: 'lent', label: 'Great Lent' };
+      if (fromPascha >= -7 && fromPascha <= -1) return { id: 'lent', label: 'Holy Week' };
+      if (fromPascha >= 0 && fromPascha <= 38) return { id: 'pascha', label: 'Pascha · Christ is Risen!' };
+      if (fromPascha >= 49 && fromPascha <= 55) return { id: 'pentecost', label: 'Pentecost' };
+      if ((m === 11 && d >= 15) || (m === 12 && d <= 24)) return { id: 'nativity-fast', label: 'Nativity Fast' };
+      if (m === 12 || (m === 1 && d <= 5)) return { id: 'nativity', label: 'Nativity of Christ' };
+      if (m === 1 && d <= 14) return { id: 'nativity', label: 'Theophany' };
+      if (m === 8 && d <= 14) return { id: 'dormition', label: 'Dormition Fast' };
+      if (m === 8 && d === 15) return { id: 'dormition', label: 'Dormition of the Theotokos' };
+      return null;
+    }
+
+    // ?season=lent (or pascha, pentecost, nativity-fast, nativity, dormition,
+    // ordinary) previews a season's colors on any day.
+    const SEASON_PREVIEWS = {
+      'lent': { id: 'lent', label: 'Great Lent' },
+      'pascha': { id: 'pascha', label: 'Pascha · Christ is Risen!' },
+      'pentecost': { id: 'pentecost', label: 'Pentecost' },
+      'nativity-fast': { id: 'nativity-fast', label: 'Nativity Fast' },
+      'nativity': { id: 'nativity', label: 'Nativity of Christ' },
+      'dormition': { id: 'dormition', label: 'Dormition Fast' },
+      'ordinary': null
+    };
+    const seasonPreview = new URLSearchParams(location.search).get('season');
+    const liturgicalSeason = seasonPreview in SEASON_PREVIEWS
+      ? SEASON_PREVIEWS[seasonPreview]
+      : byzantineSeason(new Date());
+    if (liturgicalSeason) document.documentElement.dataset.season = liturgicalSeason.id;
+  </script>
 </head>
 <body>
 
@@ -1168,6 +1453,7 @@
 
   <header>
     <h1 class="site-title">✝ Cyril & Methodius Media</h1>
+    <p class="season-label" id="season-label" hidden></p>
     <p class="hero-mission">
       Free, sacred music, made by humans, rooted in Byzantine and Latin Catholic tradition, released under CC0 (Public Domain) for the glory of God (AMDG).
     </p>
@@ -1253,7 +1539,7 @@
   <div class="np-backdrop" id="np-backdrop" onclick="closeExpandedPlayer()"></div>
 
   <div class="now-playing-bar" id="now-playing-bar">
-    <div class="np-handle" onclick="toggleExpandedPlayer()" role="button" aria-label="Expand player" tabindex="0"></div>
+    <div class="np-handle" onclick="toggleExpandedPlayer()" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleExpandedPlayer(); }" role="button" aria-label="Open or close the full player" tabindex="0"></div>
 
     <button class="np-close" onclick="closeExpandedPlayer()" aria-label="Close player">✕</button>
 
@@ -1289,9 +1575,22 @@
       <ul class="np-queue-list" id="np-queue-list" hidden></ul>
     </div>
 
+    <div class="np-sleep" id="np-sleep" role="group" aria-label="Sleep timer">
+      <span class="np-sleep-label">Stop after</span>
+      <div class="np-sleep-options">
+        <button type="button" data-sleep="off" aria-pressed="true" onclick="setSleepTimer('off')">Off</button>
+        <button type="button" data-sleep="15" aria-pressed="false" onclick="setSleepTimer('15')">15m</button>
+        <button type="button" data-sleep="30" aria-pressed="false" onclick="setSleepTimer('30')">30m</button>
+        <button type="button" data-sleep="60" aria-pressed="false" onclick="setSleepTimer('60')">1h</button>
+        <button type="button" data-sleep="end" aria-pressed="false" onclick="setSleepTimer('end')">Song end</button>
+      </div>
+      <span class="np-sleep-status" id="np-sleep-status" hidden></span>
+    </div>
+
     <div class="np-side-actions">
-      <button class="btn-np-action np-fullplayer-btn mobile-only" onclick="toggleExpandedPlayer()" title="Full Player" aria-label="Open full player">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      <button class="btn-np-action np-sleep-btn desktop-only" id="np-sleep-btn" onclick="toggleSleepMenu()" title="Sleep timer" aria-haspopup="true" aria-controls="np-sleep">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span id="np-sleep-btn-label">Sleep</span>
       </button>
 
       <button class="btn-np-action" onclick="jumpToCurrentTrack()" title="Scroll to playing track">View Track</button>
@@ -1324,6 +1623,12 @@
   <script>
     const MEDIA_BASE = "https://media.methodius.media";
     const CATALOG_URL = `${MEDIA_BASE}/catalog.json`;
+
+    if (liturgicalSeason) {
+      const seasonLabel = document.getElementById('season-label');
+      seasonLabel.textContent = liturgicalSeason.label;
+      seasonLabel.hidden = false;
+    }
 
     let globalTrackPool = [];
     let currentShufflePool = [];
@@ -1413,7 +1718,7 @@
 
           targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
           targetEl.style.borderColor = 'var(--accent)';
-          targetEl.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.4)';
+          targetEl.style.boxShadow = '0 0 15px color-mix(in srgb, var(--accent) 40%, transparent)';
           setTimeout(() => {
             targetEl.style.borderColor = '';
             targetEl.style.boxShadow = '';
@@ -1434,15 +1739,201 @@
       document.getElementById('permission-modal').style.display = show ? 'flex' : 'none';
     }
 
-    function toggleExpandedPlayer() {
-      document.getElementById('now-playing-bar').classList.toggle('expanded');
-      document.getElementById('np-backdrop').classList.toggle('active');
+    const SHEET_CLOSE_MS = 220;
+    const isPhoneLayout = () => window.matchMedia('(max-width: 640px)').matches;
+
+    function openExpandedPlayer() {
+      document.getElementById('now-playing-bar').classList.add('expanded');
+      document.getElementById('np-backdrop').classList.add('active');
     }
 
-    function closeExpandedPlayer() {
-      document.getElementById('now-playing-bar').classList.remove('expanded');
-      document.getElementById('np-backdrop').classList.remove('active');
+    function toggleExpandedPlayer() {
+      if (document.getElementById('now-playing-bar').classList.contains('expanded')) {
+        closeExpandedPlayer();
+      } else {
+        openExpandedPlayer();
+      }
     }
+
+    // On phones the sheet slides down (from wherever a drag left it) before
+    // it's hidden.
+    function closeExpandedPlayer() {
+      const bar = document.getElementById('now-playing-bar');
+      const backdrop = document.getElementById('np-backdrop');
+      if (!bar.classList.contains('expanded')) return;
+      const finish = () => {
+        bar.classList.remove('expanded');
+        backdrop.classList.remove('active');
+        bar.style.transition = '';
+        bar.style.transform = '';
+        backdrop.style.transition = '';
+        backdrop.style.opacity = '';
+      };
+      if (!isPhoneLayout()) {
+        finish();
+        return;
+      }
+      bar.style.transition = `transform ${SHEET_CLOSE_MS}ms ease-in`;
+      bar.style.transform = 'translateY(100%)';
+      backdrop.style.transition = `opacity ${SHEET_CLOSE_MS}ms`;
+      backdrop.style.opacity = '0';
+      setTimeout(finish, SHEET_CLOSE_MS);
+    }
+
+    // Phone player: swipe up (or tap the bar) to open, drag down to close.
+    function setupSheetGestures() {
+      const bar = document.getElementById('now-playing-bar');
+      const backdrop = document.getElementById('np-backdrop');
+      const queueList = document.getElementById('np-queue-list');
+      let drag = null;
+
+      bar.addEventListener('touchstart', (e) => {
+        if (!isPhoneLayout() || e.touches.length !== 1) return;
+        const touch = e.touches[0];
+        drag = {
+          startX: touch.clientX,
+          startY: touch.clientY,
+          startTime: Date.now(),
+          expanded: bar.classList.contains('expanded'),
+          // A scrolled queue list scrolls back up before the sheet moves.
+          atTop: bar.scrollTop <= 0 && !(e.target.closest('.np-queue-list') && queueList.scrollTop > 0),
+          // The seek bar and queue handles have drags of their own.
+          ownGesture: !!e.target.closest('.np-progress-bg, .np-queue-grip'),
+          active: false,
+          dy: 0
+        };
+      }, { passive: true });
+
+      bar.addEventListener('touchmove', (e) => {
+        if (!drag || drag.ownGesture) return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - drag.startX;
+        const dy = touch.clientY - drag.startY;
+        if (!drag.active) {
+          if (Math.abs(dy) < 8 || Math.abs(dy) < Math.abs(dx)) return;
+          if (!drag.expanded && dy < 0) {
+            drag = null;
+            openExpandedPlayer();
+            return;
+          }
+          // Only pull the sheet down when its content is scrolled to the top;
+          // otherwise the drag scrolls the sheet as usual.
+          if (!drag.expanded || dy < 0 || !drag.atTop) {
+            drag = null;
+            return;
+          }
+          drag.active = true;
+          bar.style.transition = 'none';
+        }
+        e.preventDefault();
+        drag.dy = Math.max(0, dy);
+        bar.style.transform = `translateY(${drag.dy}px)`;
+        backdrop.style.opacity = String(Math.max(0, 1 - drag.dy / bar.offsetHeight));
+      }, { passive: false });
+
+      const endDrag = () => {
+        if (drag && drag.active) {
+          const speed = drag.dy / Math.max(1, Date.now() - drag.startTime);
+          if (drag.dy > bar.offsetHeight * 0.25 || speed > 0.6) {
+            closeExpandedPlayer();
+          } else {
+            bar.style.transition = 'transform 0.2s ease-out';
+            bar.style.transform = '';
+            backdrop.style.opacity = '';
+          }
+        }
+        drag = null;
+      };
+      bar.addEventListener('touchend', endDrag);
+      bar.addEventListener('touchcancel', endDrag);
+
+      bar.addEventListener('click', (e) => {
+        if (!isPhoneLayout() || bar.classList.contains('expanded')) return;
+        if (e.target.closest('button, a, .np-progress-bg')) return;
+        openExpandedPlayer();
+      });
+
+      // Keep the page behind the open sheet from scrolling.
+      backdrop.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    }
+
+    // Sleep timer: 'off', 'end' (stop when this song ends) or minutes.
+    const SLEEP_FADE_MS = 8000;
+    let sleepTimer = { mode: 'off', endsAt: 0, fading: false };
+    let sleepTick = null;
+
+    function setSleepTimer(mode) {
+      clearInterval(sleepTick);
+      sleepTick = null;
+      const minutes = Number(mode);
+      sleepTimer = { mode, endsAt: minutes ? Date.now() + minutes * 60000 : 0, fading: false };
+      if (sleepTimer.endsAt) sleepTick = setInterval(checkSleepTimer, 1000);
+      document.getElementById('np-sleep').classList.remove('open');
+      renderSleepTimer();
+    }
+
+    function toggleSleepMenu() {
+      document.getElementById('np-sleep').classList.toggle('open');
+    }
+
+    function checkSleepTimer() {
+      if (!sleepTimer.endsAt) return;
+      if (!sleepTimer.fading && sleepTimer.endsAt - Date.now() <= SLEEP_FADE_MS) {
+        sleepTimer.fading = true;
+        fadeOutAndPause(activeAudioEl, sleepTimer.endsAt - Date.now(), () => setSleepTimer('off'));
+      }
+      renderSleepTimer();
+    }
+
+    // iOS ignores audio.volume, so there the music simply pauses on time.
+    function fadeOutAndPause(audio, durationMs, done) {
+      if (!audio || audio.paused) {
+        done();
+        return;
+      }
+      const startVolume = audio.volume;
+      const steps = 40;
+      let step = 0;
+      const fade = setInterval(() => {
+        step++;
+        audio.volume = Math.max(0, startVolume * (1 - step / steps));
+        if (step >= steps) {
+          clearInterval(fade);
+          audio.pause();
+          audio.volume = startVolume;
+          done();
+        }
+      }, Math.max(25, durationMs / steps));
+    }
+
+    function renderSleepTimer() {
+      document.querySelectorAll('#np-sleep [data-sleep]').forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.sleep === sleepTimer.mode));
+      });
+      let status = '';
+      let buttonLabel = 'Sleep';
+      if (sleepTimer.mode === 'end') {
+        status = 'Stops after this song.';
+        buttonLabel = 'Sleep: song end';
+      } else if (sleepTimer.endsAt) {
+        const remaining = Math.max(0, sleepTimer.endsAt - Date.now());
+        const clock = new Date(sleepTimer.endsAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        status = sleepTimer.fading ? 'Fading out…' : `Music fades out at ${clock}.`;
+        buttonLabel = `Sleep ${formatTime(remaining / 1000)}`;
+      }
+      const statusEl = document.getElementById('np-sleep-status');
+      statusEl.textContent = status;
+      statusEl.hidden = !status;
+      document.getElementById('np-sleep-btn-label').textContent = buttonLabel;
+      document.getElementById('np-sleep-btn').classList.toggle('active', sleepTimer.mode !== 'off');
+    }
+
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('np-sleep');
+      if (menu.classList.contains('open') && !e.target.closest('#np-sleep, #np-sleep-btn')) {
+        menu.classList.remove('open');
+      }
+    });
 
     function toTitleCase(str) {
       return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
@@ -1564,7 +2055,7 @@
 
       if (track.rowElement) {
         track.rowElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        track.rowElement.style.background = 'rgba(212, 175, 55, 0.2)';
+        track.rowElement.style.background = 'color-mix(in srgb, var(--accent) 20%, transparent)';
         setTimeout(() => {
           track.rowElement.style.background = '';
         }, 2500);
@@ -1606,11 +2097,103 @@
       list.hidden = !hasQueue;
       count.textContent = `Up next: ${trackQueue.length} queued`;
 
-      list.innerHTML = trackQueue.map((track, i) => `
-        <li><span class="np-queue-title">${track.title}</span><button class="np-queue-remove" data-idx="${i}" title="Remove from queue">×</button></li>
-      `).join('');
-      list.querySelectorAll('.np-queue-remove').forEach(btn => {
-        btn.addEventListener('click', () => toggleQueueTrack(trackQueue[parseInt(btn.dataset.idx, 10)]));
+      list.replaceChildren(...trackQueue.map((track) => {
+        const li = document.createElement('li');
+
+        const grip = document.createElement('button');
+        grip.type = 'button';
+        grip.className = 'np-queue-grip';
+        grip.title = 'Drag to reorder';
+        grip.setAttribute('aria-label', `Move ${track.title}. Drag, or use the up and down arrow keys.`);
+        grip.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+
+        const title = document.createElement('span');
+        title.className = 'np-queue-title';
+        title.textContent = track.title;
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'np-queue-remove';
+        remove.title = 'Remove from queue';
+        remove.setAttribute('aria-label', `Remove ${track.title} from the queue`);
+        remove.textContent = '×';
+        remove.addEventListener('click', () => toggleQueueTrack(track));
+
+        li.append(grip, title, remove);
+        return li;
+      }));
+    }
+
+    function moveQueueItem(from, to) {
+      if (from === to || to < 0 || to >= trackQueue.length) return;
+      const [track] = trackQueue.splice(from, 1);
+      trackQueue.splice(to, 0, track);
+      updateQueueIndicator();
+    }
+
+    // Drag a queued song by its handle to reorder it. Pointer events cover
+    // mouse and touch alike. The handle also takes the up and down arrow
+    // keys, for keyboards and screen readers.
+    function setupQueueDrag() {
+      const list = document.getElementById('np-queue-list');
+      let drag = null;
+
+      list.addEventListener('pointerdown', (e) => {
+        const grip = e.target.closest('.np-queue-grip');
+        if (!grip || (e.pointerType === 'mouse' && e.button !== 0)) return;
+        e.preventDefault();
+        const items = [...list.children];
+        const li = grip.closest('li');
+        const from = items.indexOf(li);
+        const step = items.length > 1 ? items[1].offsetTop - items[0].offsetTop : li.offsetHeight;
+        drag = { pointerId: e.pointerId, li, items, from, to: from, step, startY: e.clientY, startScroll: list.scrollTop };
+        grip.setPointerCapture(e.pointerId);
+        list.classList.add('reordering');
+        li.classList.add('dragging');
+      });
+
+      list.addEventListener('pointermove', (e) => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        // Scroll a long queue when the song is dragged to its top or bottom edge.
+        const box = list.getBoundingClientRect();
+        if (e.clientY < box.top + 16) list.scrollTop -= 6;
+        else if (e.clientY > box.bottom - 16) list.scrollTop += 6;
+
+        const dy = e.clientY - drag.startY + (list.scrollTop - drag.startScroll);
+        drag.li.style.transform = `translateY(${dy}px)`;
+        const to = Math.max(0, Math.min(drag.items.length - 1, Math.round(drag.from + dy / drag.step)));
+        if (to === drag.to) return;
+        drag.to = to;
+        drag.items.forEach((item, i) => {
+          if (item === drag.li) return;
+          let shift = 0;
+          if (drag.from < to && i > drag.from && i <= to) shift = -drag.step;
+          if (drag.from > to && i >= to && i < drag.from) shift = drag.step;
+          item.style.transform = shift ? `translateY(${shift}px)` : '';
+        });
+      });
+
+      const endDrag = (e) => {
+        if (!drag || e.pointerId !== drag.pointerId) return;
+        const { li, from, to } = drag;
+        drag = null;
+        list.classList.remove('reordering');
+        // If a song ended mid-drag the list was redrawn, so skip the move.
+        if (li.isConnected && from !== to) moveQueueItem(from, to);
+        else updateQueueIndicator();
+      };
+      list.addEventListener('pointerup', endDrag);
+      list.addEventListener('pointercancel', endDrag);
+
+      list.addEventListener('keydown', (e) => {
+        const grip = e.target.closest('.np-queue-grip');
+        if (!grip || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+        e.preventDefault();
+        const from = [...list.children].indexOf(grip.closest('li'));
+        const to = from + (e.key === 'ArrowUp' ? -1 : 1);
+        if (to < 0 || to >= trackQueue.length) return;
+        moveQueueItem(from, to);
+        list.children[to].querySelector('.np-queue-grip').focus();
       });
     }
 
@@ -1691,6 +2274,77 @@
         hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
       }
       return ART_PALETTE[hash % ART_PALETTE.length];
+    }
+
+    // Album cover, or the imprint symbol on a tinted square when the album
+    // has no art yet (or it fails to load).
+    function albumArtTile(coverArtUrl, symbol, colorSeed, className) {
+      const tile = document.createElement('div');
+      tile.className = `album-art ${className}`;
+      const rgb = albumArtColor(colorSeed);
+      tile.style.background = `linear-gradient(160deg, rgba(${rgb}, 0.28), rgba(${rgb}, 0.06))`;
+      const symbolEl = document.createElement('span');
+      symbolEl.textContent = symbol;
+      symbolEl.setAttribute('aria-hidden', 'true');
+      tile.appendChild(symbolEl);
+      if (coverArtUrl) {
+        const img = document.createElement('img');
+        img.src = coverArtUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.onerror = () => img.remove();
+        tile.appendChild(img);
+      }
+      return tile;
+    }
+
+    // Pieces of the album row that only show once the album is open: a
+    // blurred copy of the cover behind the row, the song count, and Play
+    // (in order) and Shuffle for just this album.
+    function albumOpenParts(albumData, cover, details) {
+      const parts = [];
+      if (cover) {
+        const backdrop = document.createElement('img');
+        backdrop.className = 'album-backdrop';
+        backdrop.src = cover;
+        backdrop.alt = '';
+        backdrop.loading = 'lazy';
+        backdrop.onerror = () => backdrop.remove();
+        parts.push(backdrop);
+      }
+
+      const count = albumData.tracks.length;
+      const meta = document.createElement('span');
+      meta.className = 'album-meta';
+      meta.textContent = `${count} ${count === 1 ? 'song' : 'songs'}`;
+      parts.push(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'album-play-actions';
+      actions.innerHTML = `
+        <button type="button" class="btn-album-play">▶ Play</button>
+        ${count > 1 ? '<button type="button" class="btn-album-shuffle">🔀 Shuffle</button>' : ''}
+      `;
+      // These buttons sit inside the album's <summary>, so keep their clicks
+      // from also closing the album.
+      const albumTracks = () => globalTrackPool.filter(track => track.accordion === details);
+      actions.querySelector('.btn-album-play').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        isShuffleActive = false;
+        playTrackByObj(albumTracks()[0]);
+      });
+      const shuffleBtn = actions.querySelector('.btn-album-shuffle');
+      if (shuffleBtn) shuffleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentShufflePool = albumTracks();
+        isShuffleActive = true;
+        playRandomTrack(currentShufflePool);
+      });
+      parts.push(actions);
+      return parts;
     }
 
     function setNowPlayingArt(coverArtUrl, symbol, colorSeed) {
@@ -1840,6 +2494,10 @@
 
           if (album.coverArt) {
             imprints[targetImprintKey][albumName].coverArt = `${MEDIA_BASE}/${encodeURI(album.coverArt)}`;
+          }
+          // Small copy made by the catalog script, for the album list.
+          if (album.coverThumb) {
+            imprints[targetImprintKey][albumName].coverThumb = `${MEDIA_BASE}/${encodeURI(album.coverThumb)}`;
           }
 
           if (album.hasDonate) {
@@ -2074,7 +2732,6 @@
             const titleWrap = document.createElement('div');
             titleWrap.className = 'album-title-wrap';
             titleWrap.innerHTML = `
-              <span class="album-symbol">${symbol}</span>
               <span class="album-title" title="${albumName}">${albumName}${yearHtml ? ' ' + yearHtml : ''}</span>
             `;
 
@@ -2085,8 +2742,13 @@
             }
             controlsWrap.appendChild(actionsDiv);
 
-            summaryEl.appendChild(titleWrap);
-            summaryEl.appendChild(controlsWrap);
+            const cover = albumData.coverThumb || albumData.coverArt;
+            summaryEl.append(
+              albumArtTile(cover, symbol, albumName, 'album-thumb'),
+              titleWrap,
+              controlsWrap,
+              ...albumOpenParts(albumData, cover, details)
+            );
 
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
@@ -2171,12 +2833,18 @@
       }, true);
 
       document.addEventListener('ended', (e) => {
+        if (sleepTimer.mode === 'end' || sleepTimer.fading) {
+          setSleepTimer('off');
+          return;
+        }
         playNextTrack();
       }, true);
     }
 
     window.addEventListener('hashchange', handleDeepLink);
 
+    setupSheetGestures();
+    setupQueueDrag();
     loadMusic();
 
     // PWA Service Worker Registration
