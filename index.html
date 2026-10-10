@@ -20,7 +20,7 @@
     "@context": "https://schema.org",
     "@type": "PodcastSeries",
     "name": "Methodius Media Release Archive",
-    "description": "A podcast archive of every Methodius Media release, including pop, lofi, ambient, and piano tracks on top of Catholic prayers.",
+    "description": "A podcast archive of every Methodius Media release, including pop, lofi, and ambient tracks on top of Catholic prayers.",
     "url": "https://methodius.media",
     "webFeed": "https://media.methodius.media/podcast.xml",
     "image": "https://methodius.media/apple-touch-icon.png"
@@ -253,7 +253,153 @@
     .search-wrapper {
       margin: 2rem 0 0.5rem 0;
       text-align: center;
+      position: relative;
     }
+    .search-wrapper .search-input { padding-right: 2.75rem; }
+    .search-clear {
+      position: absolute;
+      top: 50%;
+      right: 0.35rem;
+      transform: translateY(-50%);
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+    .search-clear:hover { color: var(--text); }
+
+    /* Search results take the place of the album list while searching:
+       matching songs first (each tagged with its section, so versions of
+       the same prayer sit side by side), then matching albums. */
+    body.searching .imprint-section { display: none !important; }
+    .search-results[hidden] { display: none; }
+    .search-results {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      margin: 1.5rem 0 2.5rem;
+    }
+    .sr-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      padding: 0 0.25rem 0.45rem;
+      border-bottom: 2px solid var(--accent);
+    }
+    .sr-head h2 {
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .sr-count { font-size: 0.8rem; color: var(--muted); }
+    .sr-list {
+      list-style: none;
+      margin: 0.4rem 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .sr-song {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.4rem 0.35rem 0.4rem 0.4rem;
+      border-radius: 8px;
+    }
+    .sr-song.playing { background: rgba(212, 175, 55, 0.08); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+    .sr-song.playing .sr-title { color: var(--accent); }
+    .sr-thumb { width: 44px; height: 44px; border-radius: 6px; font-size: 1.1rem; }
+    .sr-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .sr-title-line { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+    .sr-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sr-chip {
+      flex-shrink: 0;
+      padding: 0.08rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.64rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #c9c9cf;
+    }
+    .sr-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sr-btn {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 1.05rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sr-btn:hover { border-color: var(--accent); }
+    .sr-btn.queued { border-color: var(--accent); color: var(--accent); }
+    .sr-btn-play { border-color: var(--accent); background: var(--accent); color: #000; font-size: 0.85rem; }
+    .sr-btn-play:hover { background: var(--accent-hover); }
+    .sr-album {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      padding: 0.5rem 0.75rem 0.5rem 0.5rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      text-align: left;
+      cursor: pointer;
+    }
+    .sr-album:hover { border-color: var(--accent); }
+    .sr-album-thumb { width: 56px; height: 56px; border-radius: 6px; font-size: 1.4rem; }
+    .sr-album-title { font-family: var(--font-serif); font-size: 1.15rem; font-weight: 600; line-height: 1.2; }
+    .sr-album::after {
+      content: "";
+      flex-shrink: 0;
+      width: 7px;
+      height: 7px;
+      margin-left: auto;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(-45deg);
+    }
+    .sr-empty { padding: 2rem 0; text-align: center; color: var(--muted); }
     .search-input {
       width: 100%;
       max-width: 500px;
@@ -873,71 +1019,117 @@
       transition: width 0.1s linear;
     }
 
-    /* :not([hidden]) for the same reason as .np-queue-list below --
-       otherwise "Up next: 0 queued" shows even with an empty queue. */
-    .np-queue-indicator:not([hidden]) {
+    /* The queue lives in its own panel: a popover above the player bar on
+       desktop (opened by the Queue button), a sheet over the full player on
+       phones (opened from the "Up next" strip at the bottom of the player). */
+    .queue-panel[hidden] { display: none; }
+    .queue-panel {
+      position: fixed;
+      right: 1.2rem;
+      bottom: 80px;
+      z-index: 210;
+      width: 380px;
+      max-height: min(560px, 70vh);
+      box-sizing: border-box;
       display: flex;
-    }
-    .np-queue-indicator {
-      align-items: center;
+      flex-direction: column;
       gap: 0.5rem;
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-    .np-queue-indicator .np-queue-clear {
-      background: transparent;
-      border: none;
-      color: var(--accent);
-      font-size: 0.72rem;
+      padding: 0.85rem 0.75rem 0.75rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
       font-family: var(--font-sans);
-      cursor: pointer;
-      padding: 0;
-      text-decoration: underline;
+      color: var(--text);
     }
+    .qp-handle { display: none; }
+    .qp-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0 0.35rem 0.25rem;
+    }
+    .qp-title { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; line-height: 1.2; }
+    .qp-count { display: block; font-size: 0.8rem; color: var(--muted); }
+    .qp-header-actions { display: flex; gap: 0.4rem; }
+    .qp-clear, .qp-close {
+      height: 34px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      cursor: pointer;
+    }
+    .qp-clear { padding: 0 0.8rem; }
+    .qp-close { width: 34px; padding: 0; border-radius: 50%; }
+    .qp-clear:hover, .qp-close:hover { border-color: var(--accent); }
+    .qp-now, .qp-label, .qp-mini { display: none; }
+    .qp-empty { padding: 1.25rem 0.5rem; text-align: center; font-size: 0.88rem; color: var(--muted); }
+    .qp-thumb { width: 44px; height: 44px; border-radius: 6px; font-size: 1.1rem; }
 
     .np-queue-list {
       list-style: none;
-      margin: 0.3rem 0 0;
+      margin: 0;
       padding: 0;
-      flex-direction: column;
-      gap: 0.3rem;
-      max-height: 140px;
-      overflow-y: auto;
-      width: 100%;
-    }
-    /* Only apply flex layout when the list isn't [hidden] -- an
-       unconditional "display: flex" here would override the browser's
-       native [hidden] { display: none } rule (author CSS always wins over
-       the UA stylesheet), leaving the "collapsed" list still rendered and
-       silently taking up height even when nothing was expanded. */
-    .np-queue-list:not([hidden]) {
       display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
     .np-queue-list li {
+      min-height: 60px;
+      box-sizing: border-box;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      font-size: 0.75rem;
+      gap: 0.75rem;
+      padding: 0.4rem 0.15rem 0.4rem 0.4rem;
+      border-radius: 8px;
       color: var(--text);
-      border-radius: 4px;
     }
-    /* Drag handle for reordering. touch-action: none keeps a finger drag
-       on the handle from scrolling the page or the player sheet. */
+    .qp-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .qp-song {
+      font-size: 0.93rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .qp-album {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .np-queue-list .np-queue-remove,
     .np-queue-list .np-queue-grip {
       flex-shrink: 0;
-      width: 22px;
-      height: 22px;
+      width: 38px;
+      height: 44px;
       padding: 0;
+      border: none;
+      background: transparent;
+      color: var(--muted);
       display: flex;
       align-items: center;
       justify-content: center;
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      cursor: grab;
-      touch-action: none;
       -webkit-tap-highlight-color: transparent;
     }
+    .np-queue-list .np-queue-remove { font-size: 1.15rem; cursor: pointer; }
+    /* touch-action: none keeps a finger drag on the handle from scrolling. */
+    .np-queue-list .np-queue-grip { cursor: grab; touch-action: none; }
+    .np-queue-list .np-queue-remove:hover,
     .np-queue-list .np-queue-grip:hover,
     .np-queue-list .np-queue-grip:focus-visible { color: var(--text); }
     .np-queue-list.reordering li { transition: transform 0.15s ease; }
@@ -945,29 +1137,17 @@
       transition: none;
       position: relative;
       z-index: 1;
-      background: var(--card-bg);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+      background: #26262c;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.55);
       cursor: grabbing;
     }
     .np-queue-list.reordering li.dragging .np-queue-grip { cursor: grabbing; color: var(--accent); }
-    .np-queue-list .np-queue-title {
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .np-queue-list .np-queue-remove {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      cursor: pointer;
-      font-size: 1rem;
-      line-height: 1;
-      padding: 0 0.2rem;
-      flex-shrink: 0;
-    }
-    .np-queue-list .np-queue-remove:hover { color: var(--text); }
+
+    .np-queue-btn { gap: 0.35rem; }
+    .np-queue-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* Phone player: the next queued song peeks in a strip at the bottom. */
+    .np-upnext { display: none; }
 
     .np-side-actions {
       display: flex;
@@ -1269,11 +1449,106 @@
       }
       .now-playing-bar.expanded .np-sleep-options button { min-height: 44px; }
 
-      /* Finger-sized queue rows in the phone sheet. */
-      .now-playing-bar.expanded .np-queue-list { max-height: 220px; gap: 0; }
-      .now-playing-bar.expanded .np-queue-list li { min-height: 44px; font-size: 0.9rem; }
-      .now-playing-bar.expanded .np-queue-list .np-queue-grip { width: 40px; height: 44px; margin-left: -0.6rem; }
-      .now-playing-bar.expanded .np-queue-list .np-queue-remove { min-width: 44px; min-height: 44px; font-size: 1.2rem; }
+      .now-playing-bar.expanded .np-upnext:not([hidden]) {
+        order: 6;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0 -1.5rem calc(-1.5rem - env(safe-area-inset-bottom, 0px));
+        padding: 0.8rem 1.5rem calc(1rem + env(safe-area-inset-bottom, 0px));
+        border: none;
+        border-top: 1px solid var(--border);
+        background: #17171a;
+        color: var(--text);
+        font-family: var(--font-sans);
+        text-align: left;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .np-upnext-thumb { width: 40px; height: 40px; border-radius: 6px; font-size: 1rem; }
+      .np-upnext-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+      .np-upnext-label {
+        font-family: var(--font-heading);
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .np-upnext-title { font-size: 0.92rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .np-upnext-chevron {
+        flex-shrink: 0;
+        width: 9px;
+        height: 9px;
+        margin: 0.3rem 0.4rem 0;
+        border-left: 2px solid var(--text);
+        border-top: 2px solid var(--text);
+        transform: rotate(45deg);
+      }
+
+      /* The queue as its own sheet over the full player. */
+      .queue-panel {
+        top: 2.25rem;
+        left: 0;
+        right: 0;
+        bottom: 0 !important;
+        z-index: 600;
+        width: auto;
+        max-height: none;
+        padding: 0.6rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+        border: none;
+        border-top: 1px solid var(--accent);
+        border-radius: 18px 18px 0 0;
+        background: #0f0f11;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.6);
+        animation: np-sheet-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .search-results { margin-top: 0.75rem; }
+      .qp-header { touch-action: none; padding-bottom: 0.25rem; }
+      .qp-handle {
+        display: block;
+        width: 46px;
+        height: 5px;
+        margin: 0 auto 0.75rem;
+        border-radius: 3px;
+        background: var(--muted);
+        opacity: 0.6;
+      }
+      .qp-now:not([hidden]) {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.4rem;
+        border-radius: 8px;
+        background: rgba(212, 175, 55, 0.08);
+        background: color-mix(in srgb, var(--accent) 8%, transparent);
+      }
+      .qp-now .qp-song { color: var(--accent); }
+      .qp-now-tag { flex-shrink: 0; padding-right: 0.4rem; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); }
+      .qp-label {
+        display: block;
+        padding: 0.6rem 0.4rem 0.1rem;
+        font-family: var(--font-heading);
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      .queue-panel .np-queue-list { flex: 1; }
+      .qp-mini {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-top: auto;
+        padding: 0.55rem 0.6rem;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card-bg);
+      }
+      .qp-mini-title { flex: 1; min-width: 0; font-size: 0.9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .qp-mini .btn-np { width: 40px; height: 40px; }
+      .qp-mini .btn-np-toggle { width: 44px; height: 44px; }
     }
 
     @keyframes np-sheet-in {
@@ -1444,7 +1719,6 @@
     <a href="#catholic-lofi">Lofi</a>
     <a href="#chapel-pop">Pop</a>
     <a href="#chapel-ambient">Ambient</a>
-    <a href="#pious-piano">Piano</a>
     <a href="mailto:hello@methodius.media">Contact</a>
     <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle</a>
     <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
@@ -1471,12 +1745,15 @@
     </section>
 
     <div class="search-wrapper">
-      <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" />
+      <input type="text" id="site-search" class="search-input" placeholder="🔍 Search songs or albums..." oninput="filterMusic()" aria-label="Search songs or albums" />
+      <button type="button" class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="Clear search" hidden>✕</button>
     </div>
   </header>
 
   <div class="container">
     <main>
+      <section class="search-results" id="search-results" aria-live="polite" hidden></section>
+
       <section class="imprint-section" id="catholic-lofi">
         <div class="imprint-header">
           <div class="imprint-header-text">
@@ -1508,17 +1785,6 @@
           <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-ambient')">🔀 Shuffle Ambient</button>
         </div>
         <div class="albums-container" id="container-chapel-ambient"></div>
-      </section>
-
-      <section class="imprint-section" id="pious-piano">
-        <div class="imprint-header">
-          <div class="imprint-header-text">
-            <h2>Pious Piano</h2>
-            <span class="imprint-subtitle">Piano preludes with prayer for relaxation and peace</span>
-          </div>
-          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('pious-piano')">🔀 Shuffle Piano</button>
-        </div>
-        <div class="albums-container" id="container-pious-piano"></div>
       </section>
     </main>
 
@@ -1568,11 +1834,6 @@
         </div>
         <span class="np-time" id="np-time-dur">00:00</span>
       </div>
-      <div class="np-queue-indicator" id="np-queue-indicator" hidden>
-        <span id="np-queue-count">Up next: 0 queued</span>
-        <button class="np-queue-clear" onclick="clearQueue()">Clear</button>
-      </div>
-      <ul class="np-queue-list" id="np-queue-list" hidden></ul>
     </div>
 
     <div class="np-sleep" id="np-sleep" role="group" aria-label="Sleep timer">
@@ -1593,6 +1854,11 @@
         <span id="np-sleep-btn-label">Sleep</span>
       </button>
 
+      <button class="btn-np-action np-queue-btn desktop-only" id="np-queue-btn" onclick="toggleQueuePanel()" title="Up next" aria-haspopup="true" aria-controls="queue-panel" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="15" y2="6"/><line x1="4" y1="12" x2="15" y2="12"/><line x1="4" y1="18" x2="11" y2="18"/><polyline points="17 15 20 18 17 21"/></svg>
+        <span id="np-queue-btn-label">Queue</span>
+      </button>
+
       <button class="btn-np-action" onclick="jumpToCurrentTrack()" title="Scroll to playing track">View Track</button>
       
       <button class="btn-np-action" onclick="downloadCurrentTrack()" title="Download MP3">
@@ -1610,7 +1876,46 @@
         </span>
       </button>
     </div>
+    <button type="button" class="np-upnext" id="np-upnext" onclick="openQueuePanel()" hidden>
+      <span class="np-upnext-text">
+        <span class="np-upnext-label" id="np-upnext-label">Up next</span>
+        <span class="np-upnext-title" id="np-upnext-title"></span>
+      </span>
+      <span class="np-upnext-chevron" aria-hidden="true"></span>
+    </button>
   </div>
+
+  <section class="queue-panel" id="queue-panel" aria-label="Up next" hidden>
+    <div class="qp-header" id="qp-header">
+      <div class="qp-handle" aria-hidden="true"></div>
+      <div class="qp-title-row">
+        <div>
+          <h2 class="qp-title">Up next</h2>
+          <span class="qp-count" id="qp-count"></span>
+        </div>
+        <div class="qp-header-actions">
+          <button type="button" class="qp-clear" id="qp-clear" onclick="clearQueue()">Clear</button>
+          <button type="button" class="qp-close" onclick="closeQueuePanel()" aria-label="Close the queue">✕</button>
+        </div>
+      </div>
+    </div>
+    <div class="qp-now" id="qp-now" hidden>
+      <span class="qp-text">
+        <span class="qp-song" id="qp-now-title"></span>
+        <span class="qp-album" id="qp-now-album"></span>
+      </span>
+      <span class="qp-now-tag">PLAYING</span>
+    </div>
+    <div class="qp-label" id="qp-next-label">Next</div>
+    <ul class="np-queue-list" id="np-queue-list"></ul>
+    <p class="qp-empty" id="qp-empty">Nothing queued yet. Tap + on any song to add it here.</p>
+    <div class="qp-mini">
+      <span class="qp-mini-title" id="qp-mini-title"></span>
+      <button class="btn-np" onclick="playPrevTrack()" aria-label="Previous song">⏮</button>
+      <button class="btn-np-toggle" id="qp-toggle" onclick="toggleNowPlaying()" aria-label="Play or pause">⏸</button>
+      <button class="btn-np" onclick="playNextTrack()" aria-label="Next song">⏭</button>
+    </div>
+  </section>
 
   <div class="modal" id="permission-modal">
     <div class="modal-content">
@@ -1649,11 +1954,20 @@
       }
     }
 
+    // Short names tag each search result with its section; full names
+    // label album results.
+    const SECTION_NAMES = {
+      "catholic-lofi": ["Lofi", "Catholic Lofi"],
+      "chapel-pop": ["Pop", "Chapel Pop"],
+      "chapel-ambient": ["Ambient", "Chapel Ambient"]
+    };
+    // Every album as rendered, for album search results.
+    let albumIndex = [];
+
     const IMPRINT_SYMBOLS = {
       "catholic-lofi": "⁜",
       "chapel-pop": "✟",
-      "chapel-ambient": "☩",
-      "pious-piano": "☨"
+      "chapel-ambient": "☩"
     };
 
     function slugify(text) {
@@ -1761,6 +2075,7 @@
       const bar = document.getElementById('now-playing-bar');
       const backdrop = document.getElementById('np-backdrop');
       if (!bar.classList.contains('expanded')) return;
+      closeQueuePanel();
       const finish = () => {
         bar.classList.remove('expanded');
         backdrop.classList.remove('active');
@@ -1784,7 +2099,6 @@
     function setupSheetGestures() {
       const bar = document.getElementById('now-playing-bar');
       const backdrop = document.getElementById('np-backdrop');
-      const queueList = document.getElementById('np-queue-list');
       let drag = null;
 
       bar.addEventListener('touchstart', (e) => {
@@ -1795,10 +2109,10 @@
           startY: touch.clientY,
           startTime: Date.now(),
           expanded: bar.classList.contains('expanded'),
-          // A scrolled queue list scrolls back up before the sheet moves.
-          atTop: bar.scrollTop <= 0 && !(e.target.closest('.np-queue-list') && queueList.scrollTop > 0),
-          // The seek bar and queue handles have drags of their own.
-          ownGesture: !!e.target.closest('.np-progress-bg, .np-queue-grip'),
+          atTop: bar.scrollTop <= 0,
+          onUpNext: !!e.target.closest('#np-upnext'),
+          // The seek bar has a drag of its own.
+          ownGesture: !!e.target.closest('.np-progress-bg'),
           active: false,
           dy: 0
         };
@@ -1814,6 +2128,12 @@
           if (!drag.expanded && dy < 0) {
             drag = null;
             openExpandedPlayer();
+            return;
+          }
+          // Swiping up on the Up next strip pulls up the queue.
+          if (drag.expanded && dy < 0 && drag.onUpNext) {
+            drag = null;
+            openQueuePanel();
             return;
           }
           // Only pull the sheet down when its content is scrolled to the top;
@@ -1873,6 +2193,7 @@
     }
 
     function toggleSleepMenu() {
+      closeQueuePanel();
       document.getElementById('np-sleep').classList.toggle('open');
     }
 
@@ -1954,42 +2275,155 @@
       return uniqueWords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
     }
 
+    const isSearching = () => document.body.classList.contains('searching');
+
+    // While there's text in the search box, the album list is swapped for a
+    // results view: songs whose title (or tag) matches, then albums whose
+    // name matches. Clearing the search brings the album list back.
     function filterMusic() {
-      const query = document.getElementById('site-search').value.toLowerCase().trim();
+      const query = document.getElementById('site-search').value.trim().toLowerCase();
+      const results = document.getElementById('search-results');
+      document.getElementById('search-clear').hidden = !query;
+      document.body.classList.toggle('searching', query.length > 0);
+      results.hidden = !query;
+      if (!query) {
+        results.replaceChildren();
+        return;
+      }
 
-      document.querySelectorAll('.album-accordion').forEach(accordion => {
-        const albumTitleWrap = accordion.querySelector('.album-title-wrap').textContent.toLowerCase();
-        const tracks = accordion.querySelectorAll('.track-row');
-        let hasMatch = albumTitleWrap.includes(query);
+      const songs = globalTrackPool.filter(t =>
+        t.title.toLowerCase().includes(query) || t.tag.toLowerCase().includes(query));
+      // Titles that start with the search come first; otherwise keep site order.
+      const starts = songs.filter(t => t.title.toLowerCase().startsWith(query));
+      const orderedSongs = starts.concat(songs.filter(t => !starts.includes(t)));
+      const albums = albumIndex.filter(a => a.name.toLowerCase().includes(query));
 
-        tracks.forEach(track => {
-          const trackTitle = track.querySelector('.track-title').textContent.toLowerCase();
-          const trackTags = Array.from(track.querySelectorAll('.track-tag-badge')).map(b => b.textContent.toLowerCase()).join(' ');
+      const parts = [];
+      if (orderedSongs.length) {
+        parts.push(searchGroup('Songs', `${orderedSongs.length} ${orderedSongs.length === 1 ? 'song' : 'songs'}`, orderedSongs.map(searchSongRow)));
+      }
+      if (albums.length) {
+        parts.push(searchGroup('Albums', `${albums.length} ${albums.length === 1 ? 'album' : 'albums'}`, albums.map(searchAlbumRow)));
+      }
+      if (!parts.length) {
+        const empty = document.createElement('p');
+        empty.className = 'sr-empty';
+        empty.textContent = `No songs or albums match "${query}".`;
+        parts.push(empty);
+      }
+      results.replaceChildren(...parts);
+      markSearchResults();
+    }
 
-          if (trackTitle.includes(query) || trackTags.includes(query) || albumTitleWrap.includes(query)) {
-            track.style.display = 'flex';
-            hasMatch = true;
-          } else {
-            track.style.display = 'none';
-          }
-        });
+    function searchGroup(heading, count, rows) {
+      const group = document.createElement('div');
+      const head = document.createElement('div');
+      head.className = 'sr-head';
+      const h2 = document.createElement('h2');
+      h2.textContent = heading;
+      const countEl = document.createElement('span');
+      countEl.className = 'sr-count';
+      countEl.textContent = count;
+      head.append(h2, countEl);
+      const list = document.createElement('ul');
+      list.className = 'sr-list';
+      list.append(...rows);
+      group.append(head, list);
+      return group;
+    }
 
-        if (hasMatch) {
-          accordion.style.display = 'block';
-          if (query.length > 0) accordion.open = true;
-        } else {
-          accordion.style.display = 'none';
-        }
+    function searchSongRow(track) {
+      const li = document.createElement('li');
+      li.className = 'sr-song';
+      li.trackRef = track;
+      const [shortName] = SECTION_NAMES[track.imprintKey] || [''];
+      const symbol = IMPRINT_SYMBOLS[track.imprintKey] || '✝';
+
+      const text = document.createElement('div');
+      text.className = 'sr-text';
+      const line = document.createElement('div');
+      line.className = 'sr-title-line';
+      const title = document.createElement('span');
+      title.className = 'sr-title';
+      title.textContent = track.title;
+      line.append(title);
+      if (shortName) {
+        const chip = document.createElement('span');
+        chip.className = 'sr-chip';
+        chip.textContent = shortName;
+        line.append(chip);
+      }
+      const sub = document.createElement('span');
+      sub.className = 'sr-sub';
+      sub.textContent = track.albumName;
+      text.append(line, sub);
+
+      const queueBtn = document.createElement('button');
+      queueBtn.type = 'button';
+      queueBtn.className = 'sr-btn sr-btn-queue';
+      queueBtn.textContent = '+';
+      queueBtn.title = 'Add to queue';
+      queueBtn.setAttribute('aria-label', `Add ${track.title} to the queue`);
+      queueBtn.addEventListener('click', () => toggleQueueTrack(track));
+
+      const playBtn = document.createElement('button');
+      playBtn.type = 'button';
+      playBtn.className = 'sr-btn sr-btn-play';
+      playBtn.textContent = '▶';
+      playBtn.setAttribute('aria-label', `Play ${track.title}`);
+      playBtn.addEventListener('click', () => playTrackByObj(track));
+
+      li.append(albumArtTile(track.coverThumb || track.coverArt, symbol, track.albumName, 'sr-thumb'), text, queueBtn, playBtn);
+      return li;
+    }
+
+    function searchAlbumRow(album) {
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sr-album';
+      const text = document.createElement('span');
+      text.className = 'sr-text';
+      const title = document.createElement('span');
+      title.className = 'sr-album-title';
+      title.textContent = album.name;
+      const sub = document.createElement('span');
+      sub.className = 'sr-sub';
+      const [, longName] = SECTION_NAMES[album.imprintKey] || ['', ''];
+      sub.textContent = [`${album.count} ${album.count === 1 ? 'song' : 'songs'}`, longName, album.year].filter(Boolean).join(' · ');
+      text.append(title, sub);
+      btn.append(albumArtTile(album.cover, IMPRINT_SYMBOLS[album.imprintKey] || '✝', album.name, 'sr-album-thumb'), text);
+      btn.addEventListener('click', () => openAlbumFromSearch(album));
+      li.append(btn);
+      return li;
+    }
+
+    // Keep the playing song and the queue buttons in the results current.
+    function markSearchResults() {
+      if (!isSearching()) return;
+      const playing = globalTrackPool[currentTrackIndex];
+      document.querySelectorAll('#search-results .sr-song').forEach(row => {
+        row.classList.toggle('playing', row.trackRef === playing);
+        const queued = trackQueue.includes(row.trackRef);
+        const btn = row.querySelector('.sr-btn-queue');
+        btn.classList.toggle('queued', queued);
+        btn.textContent = queued ? '✓' : '+';
+        btn.setAttribute('aria-label', `${queued ? 'Remove' : 'Add'} ${row.trackRef.title} ${queued ? 'from' : 'to'} the queue`);
       });
+    }
 
-      document.querySelectorAll('.imprint-section').forEach(section => {
-        if (query.length === 0) {
-          section.style.display = 'block';
-        } else {
-          const visibleAlbums = section.querySelectorAll('.album-accordion[style*="display: block"]');
-          section.style.display = visibleAlbums.length > 0 ? 'block' : 'none';
-        }
-      });
+    function clearSearch() {
+      document.getElementById('site-search').value = '';
+      filterMusic();
+    }
+
+    function openAlbumFromSearch(album) {
+      clearSearch();
+      if (album.details.open) {
+        album.details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        album.details.open = true;
+      }
     }
 
     async function triggerDirectDownload(e) {
@@ -2047,7 +2481,7 @@
     }
 
     function scrollToTrackRow(track) {
-      if (!track) return;
+      if (!track || isSearching()) return;
 
       if (track.accordion) {
         track.accordion.open = true;
@@ -2087,29 +2521,41 @@
     }
 
     function updateQueueIndicator() {
-      const indicator = document.getElementById('np-queue-indicator');
-      const count = document.getElementById('np-queue-count');
       const list = document.getElementById('np-queue-list');
-      if (!indicator || !count || !list) return;
+      if (!list) return;
+      const n = trackQueue.length;
+      const countText = `${n} ${n === 1 ? 'song' : 'songs'}`;
 
-      const hasQueue = trackQueue.length > 0;
-      indicator.hidden = !hasQueue;
-      list.hidden = !hasQueue;
-      count.textContent = `Up next: ${trackQueue.length} queued`;
+      document.getElementById('qp-count').textContent = n ? countText : '';
+      document.getElementById('qp-clear').hidden = n === 0;
+      document.getElementById('qp-empty').hidden = n > 0;
+      document.getElementById('qp-next-label').hidden = n === 0;
+      document.getElementById('np-queue-btn-label').textContent = n ? `Queue ${n}` : 'Queue';
+
+      // Phone player: the next queued song peeks at the bottom.
+      const peek = document.getElementById('np-upnext');
+      peek.hidden = n === 0;
+      if (n) {
+        const next = trackQueue[0];
+        document.getElementById('np-upnext-label').textContent = `Up next · ${countText}`;
+        document.getElementById('np-upnext-title').textContent = next.title;
+        const oldThumb = peek.querySelector('.album-art');
+        if (oldThumb) oldThumb.remove();
+        peek.prepend(albumArtTile(next.coverThumb || next.coverArt, IMPRINT_SYMBOLS[next.imprintKey] || '✝', next.albumName, 'np-upnext-thumb'));
+      }
 
       list.replaceChildren(...trackQueue.map((track) => {
         const li = document.createElement('li');
 
-        const grip = document.createElement('button');
-        grip.type = 'button';
-        grip.className = 'np-queue-grip';
-        grip.title = 'Drag to reorder';
-        grip.setAttribute('aria-label', `Move ${track.title}. Drag, or use the up and down arrow keys.`);
-        grip.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
-
+        const text = document.createElement('span');
+        text.className = 'qp-text';
         const title = document.createElement('span');
-        title.className = 'np-queue-title';
+        title.className = 'qp-song';
         title.textContent = track.title;
+        const album = document.createElement('span');
+        album.className = 'qp-album';
+        album.textContent = track.albumName;
+        text.append(title, album);
 
         const remove = document.createElement('button');
         remove.type = 'button';
@@ -2119,9 +2565,116 @@
         remove.textContent = '×';
         remove.addEventListener('click', () => toggleQueueTrack(track));
 
-        li.append(grip, title, remove);
+        const grip = document.createElement('button');
+        grip.type = 'button';
+        grip.className = 'np-queue-grip';
+        grip.title = 'Drag to reorder';
+        grip.setAttribute('aria-label', `Move ${track.title}. Drag, or use the up and down arrow keys.`);
+        grip.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.7"/><circle cx="15" cy="6" r="1.7"/><circle cx="9" cy="12" r="1.7"/><circle cx="15" cy="12" r="1.7"/><circle cx="9" cy="18" r="1.7"/><circle cx="15" cy="18" r="1.7"/></svg>';
+
+        li.append(albumArtTile(track.coverThumb || track.coverArt, IMPRINT_SYMBOLS[track.imprintKey] || '✝', track.albumName, 'qp-thumb'), text, remove, grip);
         return li;
       }));
+      markSearchResults();
+    }
+
+    // The song playing now, shown at the top of the phone queue sheet and
+    // in its mini player.
+    function updateQueueNowPlaying(track) {
+      const now = document.getElementById('qp-now');
+      now.hidden = !track;
+      if (!track) return;
+      document.getElementById('qp-now-title').textContent = track.title;
+      document.getElementById('qp-now-album').textContent = track.albumName;
+      document.getElementById('qp-mini-title').textContent = track.title;
+      const oldThumb = now.querySelector('.album-art');
+      if (oldThumb) oldThumb.remove();
+      now.prepend(albumArtTile(track.coverThumb || track.coverArt, IMPRINT_SYMBOLS[track.imprintKey] || '✝', track.albumName, 'qp-thumb'));
+    }
+
+    function openQueuePanel() {
+      const panel = document.getElementById('queue-panel');
+      document.getElementById('np-sleep').classList.remove('open');
+      panel.style.transition = '';
+      panel.style.transform = '';
+      // Desktop: sit just above the player bar, whatever its height.
+      panel.style.bottom = isPhoneLayout() ? '' : `${document.getElementById('now-playing-bar').offsetHeight + 8}px`;
+      panel.hidden = false;
+      document.getElementById('np-queue-btn').classList.add('active');
+      document.getElementById('np-queue-btn').setAttribute('aria-expanded', 'true');
+    }
+
+    // On phones the sheet slides down before it's hidden.
+    function closeQueuePanel() {
+      const panel = document.getElementById('queue-panel');
+      if (panel.hidden) return;
+      document.getElementById('np-queue-btn').classList.remove('active');
+      document.getElementById('np-queue-btn').setAttribute('aria-expanded', 'false');
+      const finish = () => {
+        panel.hidden = true;
+        panel.style.transition = '';
+        panel.style.transform = '';
+      };
+      if (!isPhoneLayout()) {
+        finish();
+        return;
+      }
+      panel.style.transition = `transform ${SHEET_CLOSE_MS}ms ease-in`;
+      panel.style.transform = 'translateY(100%)';
+      setTimeout(finish, SHEET_CLOSE_MS);
+    }
+
+    function toggleQueuePanel() {
+      if (document.getElementById('queue-panel').hidden) {
+        openQueuePanel();
+      } else {
+        closeQueuePanel();
+      }
+    }
+
+    // Clicking elsewhere closes the desktop panel, except a song's + button,
+    // so songs can be added with the panel open.
+    document.addEventListener('click', (e) => {
+      const panel = document.getElementById('queue-panel');
+      if (panel.hidden) return;
+      const path = e.composedPath();
+      if (path.includes(panel)) return;
+      if (e.target.closest('#np-queue-btn, #np-upnext, .btn-queue, .sr-btn-queue')) return;
+      closeQueuePanel();
+    });
+
+    // Phone queue sheet: drag its header down to close it.
+    function setupQueueSheetGestures() {
+      const panel = document.getElementById('queue-panel');
+      const header = document.getElementById('qp-header');
+      let drag = null;
+      header.addEventListener('touchstart', (e) => {
+        if (!isPhoneLayout() || e.touches.length !== 1 || e.target.closest('button')) return;
+        drag = { startY: e.touches[0].clientY, startTime: Date.now(), dy: 0 };
+        panel.style.transition = 'none';
+      }, { passive: true });
+      header.addEventListener('touchmove', (e) => {
+        if (!drag) return;
+        e.preventDefault();
+        drag.dy = Math.max(0, e.touches[0].clientY - drag.startY);
+        panel.style.transform = `translateY(${drag.dy}px)`;
+      }, { passive: false });
+      const end = () => {
+        if (!drag) return;
+        const speed = drag.dy / Math.max(1, Date.now() - drag.startTime);
+        if (drag.dy > panel.offsetHeight * 0.25 || speed > 0.6) {
+          closeQueuePanel();
+        } else {
+          panel.style.transition = 'transform 0.2s ease-out';
+          panel.style.transform = '';
+        }
+        drag = null;
+      };
+      header.addEventListener('touchend', end);
+      header.addEventListener('touchcancel', end);
+      header.addEventListener('click', (e) => {
+        if (isPhoneLayout() && !e.target.closest('button')) closeQueuePanel();
+      });
     }
 
     function moveQueueItem(from, to) {
@@ -2398,6 +2951,7 @@
     function jumpToCurrentTrack() {
       if (currentTrackIndex === -1 || !globalTrackPool[currentTrackIndex]) return;
       closeExpandedPlayer();
+      if (isSearching()) clearSearch();
       scrollToTrackRow(globalTrackPool[currentTrackIndex]);
     }
 
@@ -2454,8 +3008,7 @@
         const imprints = {
           "catholic-lofi": {},
           "chapel-pop": {},
-          "chapel-ambient": {},
-          "pious-piano": {}
+          "chapel-ambient": {}
         };
 
         catalogData.forEach(album => {
@@ -2466,8 +3019,8 @@
           if (imprintFolder.includes("lofi")) targetImprintKey = "catholic-lofi";
           else if (imprintFolder.includes("pop")) targetImprintKey = "chapel-pop";
           else if (imprintFolder.includes("ambient")) targetImprintKey = "chapel-ambient";
-          else if (imprintFolder.includes("piano")) targetImprintKey = "pious-piano";
 
+          // Folders for other sections (like the retired Pious Piano) are skipped.
           if (!targetImprintKey) return;
 
           // Detect [sung]/[spoken] tag embedded in the album name itself
@@ -2666,6 +3219,8 @@
                 url: track.url,
                 imprintKey: imprintKey,
                 coverArt: albumData.coverArt || null,
+                coverThumb: albumData.coverThumb || null,
+                tag: track.tag || '',
                 audioElement: audioEl,
                 accordion: details,
                 rowElement: row
@@ -2691,7 +3246,10 @@
                 activeAudioEl = audioEl;
                 currentTrackIndex = globalTrackPool.indexOf(trackObj);
                 updateNowPlayingBar(trackObj);
+                updateQueueNowPlaying(trackObj);
+                markSearchResults();
                 document.getElementById('btn-np-toggle').textContent = "⏸";
+                document.getElementById('qp-toggle').textContent = "⏸";
                 history.replaceState(null, null, `#track-${trackSlug}`);
 
                 // A track that starts playing is no longer "up next" -- drop it
@@ -2704,6 +3262,7 @@
                 if (mobilePlayBtn) mobilePlayBtn.innerHTML = "▶ Play";
                 if (activeAudioEl === audioEl) {
                   document.getElementById('btn-np-toggle').textContent = "▶";
+                  document.getElementById('qp-toggle').textContent = "▶";
                 }
               });
 
@@ -2750,6 +3309,8 @@
               ...albumOpenParts(albumData, cover, details)
             );
 
+            albumIndex.push({ name: albumName, imprintKey, details, cover, count: albumData.tracks.length, year: albumData.albumYear });
+
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
             container.appendChild(details);
@@ -2779,17 +3340,19 @@
 
         // Read the feed with simple patterns rather than a strict XML parser,
         // so one stray character elsewhere in the feed can't break it.
+        // The feed can hold songs the page doesn't list (a retired section),
+        // so take the newest one that's on the page.
         let newest = null;
         for (const [item] of feed.matchAll(/<item[\s>][\s\S]*?<\/item>/g)) {
           const date = new Date((item.match(/<pubDate>([^<]*)<\/pubDate>/) || [])[1]);
           const url = (item.match(/<enclosure[^>]*\burl="([^"]*)"/) || [])[1];
           if (isNaN(date) || !url) continue;
-          if (!newest || date > newest.date) newest = { date, url };
+          const onPage = findTrackByFileUrl(url);
+          if (onPage && (!newest || date > newest.date)) newest = { date, url, track: onPage };
         }
-        if (!newest) return console.warn('Newest song: no dated entries in feed');
+        if (!newest) return console.warn('Newest song: no dated entries for songs on the page');
 
-        const track = findTrackByFileUrl(newest.url);
-        if (!track) return console.warn('Newest song: no track on the page for', newest.url);
+        const track = newest.track;
 
         document.getElementById('newest-date').textContent =
           '· ' + newest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -2845,6 +3408,8 @@
 
     setupSheetGestures();
     setupQueueDrag();
+    setupQueueSheetGestures();
+    updateQueueIndicator();
     loadMusic();
 
     // PWA Service Worker Registration
