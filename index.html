@@ -20,7 +20,7 @@
     "@context": "https://schema.org",
     "@type": "PodcastSeries",
     "name": "Methodius Media Release Archive",
-    "description": "A podcast archive of every Methodius Media release, including pop, lofi, ambient, and piano tracks on top of Catholic prayers.",
+    "description": "A podcast archive of every Methodius Media release, including pop, lofi, and ambient tracks on top of Catholic prayers.",
     "url": "https://methodius.media",
     "webFeed": "https://media.methodius.media/podcast.xml",
     "image": "https://methodius.media/apple-touch-icon.png"
@@ -1719,7 +1719,6 @@
     <a href="#catholic-lofi">Lofi</a>
     <a href="#chapel-pop">Pop</a>
     <a href="#chapel-ambient">Ambient</a>
-    <a href="#pious-piano">Piano</a>
     <a href="mailto:hello@methodius.media">Contact</a>
     <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle</a>
     <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
@@ -1786,17 +1785,6 @@
           <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-ambient')">🔀 Shuffle Ambient</button>
         </div>
         <div class="albums-container" id="container-chapel-ambient"></div>
-      </section>
-
-      <section class="imprint-section" id="pious-piano">
-        <div class="imprint-header">
-          <div class="imprint-header-text">
-            <h2>Pious Piano</h2>
-            <span class="imprint-subtitle">Piano preludes with prayer for relaxation and peace</span>
-          </div>
-          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('pious-piano')">🔀 Shuffle Piano</button>
-        </div>
-        <div class="albums-container" id="container-pious-piano"></div>
       </section>
     </main>
 
@@ -1971,8 +1959,7 @@
     const SECTION_NAMES = {
       "catholic-lofi": ["Lofi", "Catholic Lofi"],
       "chapel-pop": ["Pop", "Chapel Pop"],
-      "chapel-ambient": ["Ambient", "Chapel Ambient"],
-      "pious-piano": ["Piano", "Pious Piano"]
+      "chapel-ambient": ["Ambient", "Chapel Ambient"]
     };
     // Every album as rendered, for album search results.
     let albumIndex = [];
@@ -1980,8 +1967,7 @@
     const IMPRINT_SYMBOLS = {
       "catholic-lofi": "⁜",
       "chapel-pop": "✟",
-      "chapel-ambient": "☩",
-      "pious-piano": "☨"
+      "chapel-ambient": "☩"
     };
 
     function slugify(text) {
@@ -3022,8 +3008,7 @@
         const imprints = {
           "catholic-lofi": {},
           "chapel-pop": {},
-          "chapel-ambient": {},
-          "pious-piano": {}
+          "chapel-ambient": {}
         };
 
         catalogData.forEach(album => {
@@ -3034,8 +3019,8 @@
           if (imprintFolder.includes("lofi")) targetImprintKey = "catholic-lofi";
           else if (imprintFolder.includes("pop")) targetImprintKey = "chapel-pop";
           else if (imprintFolder.includes("ambient")) targetImprintKey = "chapel-ambient";
-          else if (imprintFolder.includes("piano")) targetImprintKey = "pious-piano";
 
+          // Folders for other sections (like the retired Pious Piano) are skipped.
           if (!targetImprintKey) return;
 
           // Detect [sung]/[spoken] tag embedded in the album name itself
@@ -3355,17 +3340,19 @@
 
         // Read the feed with simple patterns rather than a strict XML parser,
         // so one stray character elsewhere in the feed can't break it.
+        // The feed can hold songs the page doesn't list (a retired section),
+        // so take the newest one that's on the page.
         let newest = null;
         for (const [item] of feed.matchAll(/<item[\s>][\s\S]*?<\/item>/g)) {
           const date = new Date((item.match(/<pubDate>([^<]*)<\/pubDate>/) || [])[1]);
           const url = (item.match(/<enclosure[^>]*\burl="([^"]*)"/) || [])[1];
           if (isNaN(date) || !url) continue;
-          if (!newest || date > newest.date) newest = { date, url };
+          const onPage = findTrackByFileUrl(url);
+          if (onPage && (!newest || date > newest.date)) newest = { date, url, track: onPage };
         }
-        if (!newest) return console.warn('Newest song: no dated entries in feed');
+        if (!newest) return console.warn('Newest song: no dated entries for songs on the page');
 
-        const track = findTrackByFileUrl(newest.url);
-        if (!track) return console.warn('Newest song: no track on the page for', newest.url);
+        const track = newest.track;
 
         document.getElementById('newest-date').textContent =
           '· ' + newest.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
