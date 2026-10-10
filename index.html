@@ -325,14 +325,18 @@
       flex-direction: column;
       gap: 0.15rem;
     }
-    .sr-title-line { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+    .sr-title-line { display: flex; align-items: flex-start; gap: 0.5rem; min-width: 0; }
+    /* Long titles wrap to two lines, so the part that matched stays visible. */
     .sr-title {
       font-size: 0.95rem;
       font-weight: 600;
-      white-space: nowrap;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
+    .sr-sub .sr-chip { display: inline-block; margin-right: 0.45rem; vertical-align: 1px; }
     .sr-chip {
       flex-shrink: 0;
       padding: 0.08rem 0.5rem;
@@ -440,6 +444,8 @@
     }
     .badge-sung { border: 1px solid var(--purple-badge); color: var(--purple-badge); }
     .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
+    /* Albums still being recorded (no full-album download yet). */
+    .badge-progress { border: 1px dashed #b4b4bc; color: #c9c9cf; }
     .track-tag-badge { border: 1px solid var(--border); color: var(--muted); font-size: 0.68rem; padding: 0 0.4rem; }
 
     /* Button specifics */
@@ -2363,15 +2369,16 @@
       title.className = 'sr-title';
       title.textContent = track.title;
       line.append(title);
+      // The section tag sits on the album line, leaving the title the full width.
+      const sub = document.createElement('span');
+      sub.className = 'sr-sub';
       if (shortName) {
         const chip = document.createElement('span');
         chip.className = 'sr-chip';
         chip.textContent = shortName;
-        line.append(chip);
+        sub.append(chip);
       }
-      const sub = document.createElement('span');
-      sub.className = 'sr-sub';
-      sub.textContent = track.albumName;
+      sub.append(track.albumName);
       text.append(line, sub);
 
       const queueBtn = document.createElement('button');
@@ -2406,7 +2413,7 @@
       const sub = document.createElement('span');
       sub.className = 'sr-sub';
       const [, longName] = SECTION_NAMES[album.imprintKey] || ['', ''];
-      sub.textContent = [`${album.count} ${album.count === 1 ? 'song' : 'songs'}`, longName, album.year].filter(Boolean).join(' · ');
+      sub.textContent = [`${album.count} ${album.count === 1 ? 'song' : 'songs'}`, album.inProgress ? 'In progress' : '', longName, album.year].filter(Boolean).join(' · ');
       text.append(title, sub);
       btn.append(albumArtTile(album.cover, IMPRINT_SYMBOLS[album.imprintKey] || '✝', album.name, 'sr-album-thumb'), text);
       btn.addEventListener('click', () => openAlbumFromSearch(album));
@@ -3156,7 +3163,13 @@
               ? `<span class="badge badge-${albumData.specialTag.toLowerCase()}">${albumData.specialTag}</span>`
               : '';
               
-            const albumTagContainerHtml = specialBadgeHtml ? `<div class="album-tag-container">${specialBadgeHtml}</div>` : '';
+            // An album without a full-album download is still being recorded.
+            const progressBadgeHtml = albumData.zipUrl
+              ? ''
+              : `<span class="badge badge-progress" title="More songs are on the way. The full-album download comes when it's finished.">In progress</span>`;
+            const albumTagContainerHtml = (specialBadgeHtml || progressBadgeHtml)
+              ? `<div class="album-tag-container">${specialBadgeHtml}${progressBadgeHtml}</div>`
+              : '';
 
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'album-actions';
@@ -3342,7 +3355,7 @@
               ...albumOpenParts(albumData, cover, details)
             );
 
-            albumIndex.push({ name: albumName, imprintKey, details, cover, count: albumData.tracks.length, year: albumData.albumYear });
+            albumIndex.push({ name: albumName, imprintKey, details, cover, count: albumData.tracks.length, year: albumData.albumYear, inProgress: !albumData.zipUrl });
 
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
