@@ -3040,10 +3040,17 @@
       }
     }
 
+    // One malformed catalog entry shouldn't blank the page: it is skipped and
+    // noted in the browser console, and the rest of the catalog still shows.
+    function skipBadEntry(kind, entry, err) {
+      console.warn(`Skipped a ${kind} in the catalog:`, err && err.message ? err.message : err, entry);
+    }
+
     async function loadMusic() {
       try {
         const response = await fetch(CATALOG_URL);
         const catalogData = await response.json();
+        if (!Array.isArray(catalogData)) throw new Error('catalog.json is not a list of albums');
 
         const imprints = {
           "catholic-lofi": {},
@@ -3052,6 +3059,7 @@
         };
 
         catalogData.forEach(album => {
+          try {
           const imprintFolder = (album.imprintFolder || "").toLowerCase().trim();
           const rawAlbumName = album.albumName;
 
@@ -3099,6 +3107,9 @@
 
           if (album.tracks && album.tracks.length > 0) {
             album.tracks.forEach(t => {
+              if (!t || typeof t.path !== 'string' || !t.path.trim() || (t.title != null && typeof t.title !== 'string')) {
+                return skipBadEntry('song', t, 'missing a file path or has a bad title');
+              }
               const fileUrl = `${MEDIA_BASE}/${encodeURI(t.path)}`;
 
               let trackTitle = t.title || "";
@@ -3128,6 +3139,9 @@
               });
             });
           }
+          } catch (err) {
+            skipBadEntry('album', album, err);
+          }
         });
 
         Object.keys(imprints).forEach(imprintKey => {
@@ -3137,6 +3151,8 @@
 
           Object.keys(albums).forEach((albumName, index) => {
             const albumData = albums[albumName];
+            const poolStart = globalTrackPool.length;
+            try {
             if (albumData.tracks.length === 0 && !albumData.zipUrl) return;
 
             // Sort tracks numerically by track number
@@ -3360,6 +3376,11 @@
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
             container.appendChild(details);
+            } catch (err) {
+              globalTrackPool.length = poolStart;
+              albumIndex = albumIndex.filter(a => a.name !== albumName && a.name !== albumData.displayTitle);
+              skipBadEntry('album', albumData, err);
+            }
           });
         });
 
