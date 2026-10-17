@@ -6,6 +6,8 @@
   
   <title>Cyril & Methodius Media — Sacred Sound. Open Source.</title>
   <meta name="description" content="Free, sacred music, made by humans, rooted in Byzantine and Latin Catholic tradition, released under CC0 Public Domain for AMDG." />
+  <link rel="alternate" type="application/json" title="Music catalog (every album and song)" href="https://media.methodius.media/catalog.json" />
+  <link rel="help" type="text/plain" title="How to download the music" href="/llms.txt" />
   <link rel="canonical" href="https://methodius.media/" />
   <link rel="manifest" href="/site.webmanifest" />
 
@@ -446,6 +448,17 @@
     .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
     /* Albums still being recorded (no full-album download yet). */
     .badge-progress { border: 1px dashed #b4b4bc; color: #c9c9cf; }
+    .badge-instrumental { border: 1px solid #f4f4f5; color: #f4f4f5; }
+    /* Instrumental albums: a white frame on every copy of their cover. */
+    .art-instrumental::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      border: 3px solid #f4f4f5;
+      border-radius: inherit;
+      pointer-events: none;
+    }
     .track-tag-badge { border: 1px solid var(--border); color: var(--muted); font-size: 0.68rem; padding: 0 0.4rem; }
 
     /* Button specifics */
@@ -533,6 +546,8 @@
     .newest-song:hover #newest-title { color: var(--accent); }
     .newest-album { color: var(--muted); font-style: italic; font-weight: 500; font-size: 0.95rem; }
     .newest-card:not([hidden]) + .search-wrapper { margin-top: 1rem; }
+    /* The menu's Instrumental link scrolls here; clear the sticky menu. */
+    .search-wrapper { scroll-margin-top: 110px; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
       padding-bottom: 0.5rem;
@@ -1741,6 +1756,7 @@
     <a href="#catholic-lofi">Lofi</a>
     <a href="#chapel-pop">Pop</a>
     <a href="#chapel-ambient">Ambient</a>
+    <a href="#" id="nav-instrumental" onclick="showInstrumentals(event)" hidden>Instrumental</a>
     <a href="mailto:hello@methodius.media">Contact</a>
     <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle</a>
     <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
@@ -2314,7 +2330,8 @@
       }
 
       const songs = globalTrackPool.filter(t =>
-        t.title.toLowerCase().includes(query) || t.tag.toLowerCase().includes(query));
+        t.title.toLowerCase().includes(query) || t.tag.toLowerCase().includes(query) ||
+        (t.instrumental && 'instrumental'.includes(query)));
       // Titles that start with the search come first; otherwise keep site order.
       const starts = songs.filter(t => t.title.toLowerCase().startsWith(query));
       const orderedSongs = starts.concat(songs.filter(t => !starts.includes(t)));
@@ -2396,7 +2413,7 @@
       playBtn.setAttribute('aria-label', `Play ${track.title}`);
       playBtn.addEventListener('click', () => playTrackByObj(track));
 
-      li.append(albumArtTile(track.coverThumb || track.coverArt, symbol, track.albumName, 'sr-thumb'), text, queueBtn, playBtn);
+      li.append(albumArtTile(track.coverThumb || track.coverArt, symbol, track.albumName, 'sr-thumb' + (track.instrumental ? ' art-instrumental' : '')), text, queueBtn, playBtn);
       return li;
     }
 
@@ -2415,7 +2432,7 @@
       const [, longName] = SECTION_NAMES[album.imprintKey] || ['', ''];
       sub.textContent = [`${album.count} ${album.count === 1 ? 'song' : 'songs'}`, album.inProgress ? 'In progress' : '', longName, album.year].filter(Boolean).join(' · ');
       text.append(title, sub);
-      btn.append(albumArtTile(album.cover, IMPRINT_SYMBOLS[album.imprintKey] || '✝', album.name, 'sr-album-thumb'), text);
+      btn.append(albumArtTile(album.cover, IMPRINT_SYMBOLS[album.imprintKey] || '✝', album.name, 'sr-album-thumb' + (album.instrumental ? ' art-instrumental' : '')), text);
       btn.addEventListener('click', () => openAlbumFromSearch(album));
       li.append(btn);
       return li;
@@ -2433,6 +2450,15 @@
         btn.textContent = queued ? '✓' : '+';
         btn.setAttribute('aria-label', `${queued ? 'Remove' : 'Add'} ${row.trackRef.title} ${queued ? 'from' : 'to'} the queue`);
       });
+    }
+
+    // Menu link: every instrumental album and song, through the search view.
+    function showInstrumentals(e) {
+      if (e) e.preventDefault();
+      const box = document.getElementById('site-search');
+      box.value = 'instrumental';
+      filterMusic();
+      box.closest('.search-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function clearSearch() {
@@ -2564,7 +2590,7 @@
         document.getElementById('np-upnext-title').textContent = next.title;
         const oldThumb = peek.querySelector('.album-art');
         if (oldThumb) oldThumb.remove();
-        peek.prepend(albumArtTile(next.coverThumb || next.coverArt, IMPRINT_SYMBOLS[next.imprintKey] || '✝', next.albumName, 'np-upnext-thumb'));
+        peek.prepend(albumArtTile(next.coverThumb || next.coverArt, IMPRINT_SYMBOLS[next.imprintKey] || '✝', next.albumName, 'np-upnext-thumb' + (next.instrumental ? ' art-instrumental' : '')));
       }
 
       list.replaceChildren(...trackQueue.map((track) => {
@@ -2600,7 +2626,7 @@
         play.type = 'button';
         play.className = 'qp-play';
         play.setAttribute('aria-label', `Play ${track.title} now`);
-        play.append(albumArtTile(track.coverThumb || track.coverArt, IMPRINT_SYMBOLS[track.imprintKey] || '✝', track.albumName, 'qp-thumb'), text);
+        play.append(albumArtTile(track.coverThumb || track.coverArt, IMPRINT_SYMBOLS[track.imprintKey] || '✝', track.albumName, 'qp-thumb' + (track.instrumental ? ' art-instrumental' : '')), text);
         play.addEventListener('click', () => playFromQueue(track));
 
         li.append(grip, play, remove);
@@ -2620,7 +2646,7 @@
       document.getElementById('qp-mini-title').textContent = track.title;
       const oldThumb = now.querySelector('.album-art');
       if (oldThumb) oldThumb.remove();
-      now.prepend(albumArtTile(track.coverThumb || track.coverArt, IMPRINT_SYMBOLS[track.imprintKey] || '✝', track.albumName, 'qp-thumb'));
+      now.prepend(albumArtTile(track.coverThumb || track.coverArt, IMPRINT_SYMBOLS[track.imprintKey] || '✝', track.albumName, 'qp-thumb' + (track.instrumental ? ' art-instrumental' : '')));
     }
 
     function openQueuePanel() {
@@ -2942,6 +2968,8 @@
 
     function setNowPlayingArt(coverArtUrl, symbol, colorSeed) {
       const placeholder = document.getElementById('np-art-placeholder');
+      const playingTrack = globalTrackPool[currentTrackIndex];
+      placeholder.classList.toggle('art-instrumental', !!(playingTrack && playingTrack.instrumental));
       const img = document.getElementById('np-art-img');
       const symbolEl = document.getElementById('np-art-symbol');
 
@@ -3079,12 +3107,17 @@
           const yearMatch = rawAlbumName.match(/\[(\d{4})\]|\((\d{4})\)/);
           const albumYear = yearMatch ? (yearMatch[1] || yearMatch[2]) : null;
 
-          const albumName = rawAlbumName.replace(/\s*\[(sung|spoken)\]|\s*\((sung|spoken)\)/gi, '')
+          // [instrumental] in the folder name marks the instrumental version
+          // of an album. Its title gets "(Instrumental)" so it stays separate
+          // from the sung version with the same name.
+          const isInstrumental = /\[instrumental\]|\(instrumental\)/i.test(rawAlbumName);
+
+          const albumName = rawAlbumName.replace(/\s*\[(sung|spoken|instrumental)\]|\s*\((sung|spoken|instrumental)\)/gi, '')
                                         .replace(/\[\d{4}\]|\(\d{4}\)/g, '')
-                                        .trim();
+                                        .trim() + (isInstrumental ? ' (Instrumental)' : '');
 
           if (!imprints[targetImprintKey][albumName]) {
-            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null, coverArt: null, specialTag: albumSpecialTag, albumYear: albumYear };
+            imprints[targetImprintKey][albumName] = { tracks: [], zipUrl: null, donateTxtUrl: null, coverArt: null, specialTag: albumSpecialTag, albumYear: albumYear, instrumental: isInstrumental };
           } else if (albumSpecialTag && !imprints[targetImprintKey][albumName].specialTag) {
             imprints[targetImprintKey][albumName].specialTag = albumSpecialTag;
           }
@@ -3124,7 +3157,7 @@
               }
 
               // Strip embedded tags from track title text
-              trackTitle = trackTitle.replace(/\s*\[(sung|spoken)\]|\s*\((sung|spoken)\)/gi, '').trim();
+              trackTitle = trackTitle.replace(/\s*\[(sung|spoken|instrumental)\]|\s*\((sung|spoken|instrumental)\)/gi, '').trim();
 
               // Inherit album tag ONLY if track has none and album tag differs
               if (!trackTag && albumSpecialTag) {
@@ -3183,8 +3216,11 @@
             const progressBadgeHtml = albumData.zipUrl
               ? ''
               : `<span class="badge badge-progress" title="More songs are on the way. The full-album download comes when it's finished.">In progress</span>`;
-            const albumTagContainerHtml = (specialBadgeHtml || progressBadgeHtml)
-              ? `<div class="album-tag-container">${specialBadgeHtml}${progressBadgeHtml}</div>`
+            const instrumentalBadgeHtml = albumData.instrumental
+              ? `<span class="badge badge-instrumental">Instrumental</span>`
+              : '';
+            const albumTagContainerHtml = (specialBadgeHtml || instrumentalBadgeHtml || progressBadgeHtml)
+              ? `<div class="album-tag-container">${specialBadgeHtml}${instrumentalBadgeHtml}${progressBadgeHtml}</div>`
               : '';
 
             const actionsDiv = document.createElement('div');
@@ -3282,6 +3318,7 @@
                 imprintKey: imprintKey,
                 coverArt: albumData.coverArt || null,
                 coverThumb: albumData.coverThumb || null,
+                instrumental: !!albumData.instrumental,
                 tag: track.tag || '',
                 audioElement: audioEl,
                 accordion: details,
@@ -3365,13 +3402,13 @@
 
             const cover = albumData.coverThumb || albumData.coverArt;
             summaryEl.append(
-              albumArtTile(cover, symbol, albumName, 'album-thumb'),
+              albumArtTile(cover, symbol, albumName, 'album-thumb' + (albumData.instrumental ? ' art-instrumental' : '')),
               titleWrap,
               controlsWrap,
               ...albumOpenParts(albumData, cover, details)
             );
 
-            albumIndex.push({ name: albumName, imprintKey, details, cover, count: albumData.tracks.length, year: albumData.albumYear, inProgress: !albumData.zipUrl });
+            albumIndex.push({ name: albumName, imprintKey, details, cover, count: albumData.tracks.length, year: albumData.albumYear, inProgress: !albumData.zipUrl, instrumental: !!albumData.instrumental });
 
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
@@ -3384,6 +3421,7 @@
           });
         });
 
+        document.getElementById('nav-instrumental').hidden = !albumIndex.some(a => a.instrumental);
         setupContinuousPlayback();
         loadNewestSong();
         handleDeepLink();
