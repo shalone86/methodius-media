@@ -1,0 +1,49 @@
+# Cyril & Methodius Media
+
+> Free sacred music made by humans, rooted in Byzantine and Latin Catholic tradition: lofi, pop and ambient settings of prayers. Every song, album and cover is released under CC0 1.0 (public domain). You may download, copy, remix and redistribute everything, for any purpose, with no attribution required.
+
+The website (https://methodius.media) builds its song list with JavaScript, so the raw HTML has few links. Use the catalog file below instead. Everything is served from https://media.methodius.media/.
+
+## Catalog
+
+- [catalog.json](https://media.methodius.media/catalog.json): every album and song, as a JSON list of albums.
+
+Each album has:
+- `albumName`: the folder name. Tags in brackets mark the style ([sung], [spoken]) and the year ([2026]).
+- `imprintFolder`: the section: "catholic lofi", "chapel pop" or "chapel ambient". A "pious piano" album may still appear here; it is retired from the website but its files remain public domain.
+- `zipUrl`: path of the full-album ZIP, or null while the album is still in progress.
+- `coverArt`: path of the full-size cover image. `coverThumb`: a 320px copy.
+- `tracks`: songs, each with `title`, `trackNum`, `path` (the MP3) and, when known, `key`, `bpm`, `lyrics` and `chords`.
+
+All paths are relative to https://media.methodius.media/ and need URL-encoding (they contain spaces and brackets).
+
+## Downloading
+
+- One album: fetch its `zipUrl`.
+- Every song: fetch each track's `path`.
+- New releases: the podcast feed lists every song as a dated MP3 enclosure: [podcast.xml](https://media.methodius.media/podcast.xml).
+
+Example (Python):
+
+```python
+import json, urllib.parse, urllib.request
+BASE = "https://media.methodius.media/"
+HEADERS = {"User-Agent": "my-downloader/1.0"}
+def get(path):
+    req = urllib.request.Request(BASE + urllib.parse.quote(path), headers=HEADERS)
+    return urllib.request.urlopen(req).read()
+for album in json.loads(get("catalog.json")):
+    if album.get("zipUrl"):
+        open(album["zipUrl"].split("/")[-1], "wb").write(get(album["zipUrl"]))
+```
+
+Please send a descriptive User-Agent and download at a modest pace.
+
+## Related sites
+
+- [Catholic Lofi](https://catholiclofi.com/llms.txt): more Catholic lofi albums.
+- [Shalone's Daily Beats](https://shalonely.com/llms.txt): a beat a day, also public domain.
+
+## Contact
+
+hello@methodius.media
