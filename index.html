@@ -448,7 +448,6 @@
     .badge-spoken { border: 1px solid #6fa8dc; color: #6fa8dc; }
     /* Albums still being recorded (no full-album download yet). */
     .badge-progress { border: 1px dashed #b4b4bc; color: #c9c9cf; }
-    .badge-instrumental { border: 1px solid #f4f4f5; color: #f4f4f5; }
     /* Instrumental albums: a white frame on every copy of their cover. */
     .art-instrumental::after {
       content: "";
@@ -3180,9 +3179,18 @@
               if (!trackTag && albumSpecialTag) {
                 trackTag = albumSpecialTag;
               }
+              if (!trackTag && isInstrumental) trackTag = 'Instrumental';
+
+              // The Instrumental tag already says it, so the title drops the
+              // word. Downloads keep the full name from the file.
+              const fileTitle = trackTitle;
+              if (/\binstrumental\b/i.test(trackTag)) {
+                trackTitle = trackTitle.replace(/\s*\binstrumental\b/gi, '').replace(/\s{2,}/g, ' ').trim() || fileTitle;
+              }
 
               imprints[targetImprintKey][albumName].tracks.push({
                 title: trackTitle,
+                fileTitle: fileTitle,
                 tag: trackTag,
                 trackNum: t.trackNum || 999,
                 url: fileUrl
@@ -3195,7 +3203,6 @@
         });
 
         const instrumentalContainer = document.getElementById('container-instrumental');
-        const twinActions = new Map();
         Object.keys(imprints).forEach(imprintKey => {
           const container = document.getElementById(`container-${imprintKey}`);
           const albums = imprints[imprintKey];
@@ -3237,11 +3244,8 @@
             const progressBadgeHtml = albumData.zipUrl
               ? ''
               : `<span class="badge badge-progress" title="More songs are on the way. The full-album download comes when it's finished.">In progress</span>`;
-            const instrumentalBadgeHtml = albumData.instrumental
-              ? `<span class="badge badge-instrumental">Instrumental</span>`
-              : '';
-            const albumTagContainerHtml = (specialBadgeHtml || instrumentalBadgeHtml || progressBadgeHtml)
-              ? `<div class="album-tag-container">${specialBadgeHtml}${instrumentalBadgeHtml}${progressBadgeHtml}</div>`
+            const albumTagContainerHtml = (specialBadgeHtml || progressBadgeHtml)
+              ? `<div class="album-tag-container">${specialBadgeHtml}${progressBadgeHtml}</div>`
               : '';
 
             const actionsDiv = document.createElement('div');
@@ -3311,7 +3315,7 @@
                     </button>
                     <button class="btn-download"
                             data-url="${track.url}"
-                            data-filename="${track.title}.mp3"
+                            data-filename="${track.fileTitle || track.title}.mp3"
                             onclick="triggerDirectDownload(event)"
                             title="Download MP3">
                       <span class="desktop-only">↓ MP3</span>
@@ -3434,7 +3438,6 @@
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
             albumContainer.appendChild(details);
-            twinActions.set(`${imprintKey}|${albumName}`, actionsDiv);
             } catch (err) {
               globalTrackPool.length = poolStart;
               albumIndex = albumIndex.filter(a => a.name !== albumName && a.name !== albumData.displayTitle);
@@ -3446,7 +3449,6 @@
         const hasInstrumentals = albumIndex.some(a => a.instrumental);
         document.getElementById('nav-instrumental').hidden = !hasInstrumentals;
         document.getElementById('instrumental').hidden = !hasInstrumentals;
-        linkInstrumentalTwins(twinActions);
         setupContinuousPlayback();
         loadNewestSong();
         handleDeepLink();
@@ -3454,36 +3456,6 @@
       } catch (err) {
         console.error("Error fetching tracks from Cloudflare R2:", err);
       }
-    }
-
-    // An album and its instrumental version (same name plus "(Instrumental)",
-    // in the same imprint folder) each get a button that opens the other.
-    function linkInstrumentalTwins(twinActions) {
-      const suffix = ' (Instrumental)';
-      albumIndex.forEach(inst => {
-        if (!inst.instrumental || !inst.name.endsWith(suffix)) return;
-        const sung = albumIndex.find(a => !a.instrumental && a.imprintKey === inst.imprintKey && a.name === inst.name.slice(0, -suffix.length));
-        if (!sung) return;
-        addTwinButton(twinActions.get(`${sung.imprintKey}|${sung.name}`), inst.details, '🎹', 'Instrumental', 'Open the instrumental version');
-        addTwinButton(twinActions.get(`${inst.imprintKey}|${inst.name}`), sung.details, '🎤', 'With vocals', 'Open the version with vocals');
-      });
-    }
-
-    function addTwinButton(actionsDiv, target, icon, label, title) {
-      if (!actionsDiv) return;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'btn-album-share btn-album-twin';
-      btn.title = title;
-      btn.setAttribute('aria-label', title);
-      btn.innerHTML = `<span class="desktop-only">${icon} ${label}</span><span class="mobile-only">${icon}</span>`;
-      btn.onclick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        target.open = true;
-        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      };
-      actionsDiv.insertBefore(btn, actionsDiv.querySelector('.btn-album-share'));
     }
 
     // Every upload gets a dated entry in the podcast feed, so the newest
