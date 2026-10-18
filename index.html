@@ -546,8 +546,6 @@
     .newest-song:hover #newest-title { color: var(--accent); }
     .newest-album { color: var(--muted); font-style: italic; font-weight: 500; font-size: 0.95rem; }
     .newest-card:not([hidden]) + .search-wrapper { margin-top: 1rem; }
-    /* The menu's Instrumental link scrolls here; clear the sticky menu. */
-    .search-wrapper { scroll-margin-top: 110px; }
     .imprint-header {
       border-bottom: 2px solid var(--accent);
       padding-bottom: 0.5rem;
@@ -1756,7 +1754,7 @@
     <a href="#catholic-lofi">Lofi</a>
     <a href="#chapel-pop">Pop</a>
     <a href="#chapel-ambient">Ambient</a>
-    <a href="#" id="nav-instrumental" onclick="showInstrumentals(event)" hidden>Instrumental</a>
+    <a href="#instrumental" id="nav-instrumental" hidden>Instrumental</a>
     <a href="mailto:hello@methodius.media">Contact</a>
     <a href="#" onclick="triggerShuffle(event)" style="color: var(--accent); font-weight: 600;">🔀 Shuffle</a>
     <a href="https://buy.stripe.com/8x2aEX4RXgOj7qeeG7cV202" target="_blank" rel="noopener" style="color: var(--accent);">✝ Support</a>
@@ -1823,6 +1821,17 @@
           <button class="btn-section-shuffle" onclick="triggerSectionShuffle('chapel-ambient')">🔀 Shuffle Ambient</button>
         </div>
         <div class="albums-container" id="container-chapel-ambient"></div>
+      </section>
+
+      <section class="imprint-section" id="instrumental" hidden>
+        <div class="imprint-header">
+          <div class="imprint-header-text">
+            <h2>Instrumental</h2>
+            <span class="imprint-subtitle">The same albums without vocals, for study, prayer and video</span>
+          </div>
+          <button class="btn-section-shuffle" onclick="triggerSectionShuffle('instrumental')">🔀 Shuffle Instrumental</button>
+        </div>
+        <div class="albums-container" id="container-instrumental"></div>
       </section>
     </main>
 
@@ -2058,8 +2067,11 @@
 
       const targetId = hash.replace('#', '');
       const targetEl = document.getElementById(targetId);
+      // Menu links (#chapel-ambient, #instrumental...) just scroll to their
+      // section; only album and song links open and play something.
+      const isShareLink = targetEl && (targetEl.classList.contains('album-accordion') || targetEl.closest('.album-accordion'));
 
-      if (targetEl) {
+      if (isShareLink) {
         setTimeout(() => {
           if (targetEl.classList.contains('album-accordion')) {
             targetEl.open = true;
@@ -2452,15 +2464,6 @@
       });
     }
 
-    // Menu link: every instrumental album and song, through the search view.
-    function showInstrumentals(e) {
-      if (e) e.preventDefault();
-      const box = document.getElementById('site-search');
-      box.value = 'instrumental';
-      filterMusic();
-      box.closest('.search-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
     function clearSearch() {
       document.getElementById('site-search').value = '';
       filterMusic();
@@ -2507,13 +2510,16 @@
       if (e) e.preventDefault();
       if (globalTrackPool.length === 0) return;
       
-      currentShufflePool = globalTrackPool;
+      // Shuffle Radio is the sung albums; instrumentals have their own shuffle.
+      currentShufflePool = globalTrackPool.filter(track => !track.instrumental);
       isShuffleActive = true;
       playRandomTrack(currentShufflePool);
     }
 
     function triggerSectionShuffle(imprintKey) {
-      const sectionPool = globalTrackPool.filter(track => track.imprintKey === imprintKey);
+      const sectionPool = imprintKey === 'instrumental'
+        ? globalTrackPool.filter(track => track.instrumental)
+        : globalTrackPool.filter(track => track.imprintKey === imprintKey && !track.instrumental);
       if (sectionPool.length === 0) return;
 
       currentShufflePool = sectionPool;
@@ -2839,9 +2845,21 @@
       if (isShuffleActive) {
         playRandomTrack(activePool);
       } else {
-        const nextIdx = (currentTrackIndex + 1) % activePool.length;
-        playTrackByObj(activePool[nextIdx]);
+        playTrackByObj(stepInOrder(activePool, 1));
       }
+    }
+
+    // Playing in order stays with what the listener picked: after a sung song
+    // comes the next sung song (skipping instrumental twins), and after an
+    // instrumental the next instrumental.
+    function stepInOrder(pool, dir) {
+      const current = pool[currentTrackIndex];
+      const wanted = current ? !!current.instrumental : false;
+      for (let step = 1; step <= pool.length; step++) {
+        const track = pool[(currentTrackIndex + dir * step + pool.length * step) % pool.length];
+        if (!!track.instrumental === wanted) return track;
+      }
+      return pool[(currentTrackIndex + dir + pool.length) % pool.length];
     }
 
     function playPrevTrack() {
@@ -2851,8 +2869,7 @@
       if (isShuffleActive) {
         playRandomTrack(activePool);
       } else {
-        const prevIdx = (currentTrackIndex - 1 + activePool.length) % activePool.length;
-        playTrackByObj(activePool[prevIdx]);
+        playTrackByObj(stepInOrder(activePool, -1));
       }
     }
 
@@ -3177,6 +3194,8 @@
           }
         });
 
+        const instrumentalContainer = document.getElementById('container-instrumental');
+        const twinActions = new Map();
         Object.keys(imprints).forEach(imprintKey => {
           const container = document.getElementById(`container-${imprintKey}`);
           const albums = imprints[imprintKey];
@@ -3187,6 +3206,8 @@
             const poolStart = globalTrackPool.length;
             try {
             if (albumData.tracks.length === 0 && !albumData.zipUrl) return;
+            // Instrumental albums all go in the Instrumental section at the end.
+            const albumContainer = albumData.instrumental ? instrumentalContainer : container;
 
             // Sort tracks numerically by track number
             albumData.tracks.sort((a, b) => a.trackNum - b.trackNum);
@@ -3412,7 +3433,8 @@
 
             details.appendChild(summaryEl);
             details.appendChild(trackListEl);
-            container.appendChild(details);
+            albumContainer.appendChild(details);
+            twinActions.set(`${imprintKey}|${albumName}`, actionsDiv);
             } catch (err) {
               globalTrackPool.length = poolStart;
               albumIndex = albumIndex.filter(a => a.name !== albumName && a.name !== albumData.displayTitle);
@@ -3421,7 +3443,10 @@
           });
         });
 
-        document.getElementById('nav-instrumental').hidden = !albumIndex.some(a => a.instrumental);
+        const hasInstrumentals = albumIndex.some(a => a.instrumental);
+        document.getElementById('nav-instrumental').hidden = !hasInstrumentals;
+        document.getElementById('instrumental').hidden = !hasInstrumentals;
+        linkInstrumentalTwins(twinActions);
         setupContinuousPlayback();
         loadNewestSong();
         handleDeepLink();
@@ -3429,6 +3454,36 @@
       } catch (err) {
         console.error("Error fetching tracks from Cloudflare R2:", err);
       }
+    }
+
+    // An album and its instrumental version (same name plus "(Instrumental)",
+    // in the same imprint folder) each get a button that opens the other.
+    function linkInstrumentalTwins(twinActions) {
+      const suffix = ' (Instrumental)';
+      albumIndex.forEach(inst => {
+        if (!inst.instrumental || !inst.name.endsWith(suffix)) return;
+        const sung = albumIndex.find(a => !a.instrumental && a.imprintKey === inst.imprintKey && a.name === inst.name.slice(0, -suffix.length));
+        if (!sung) return;
+        addTwinButton(twinActions.get(`${sung.imprintKey}|${sung.name}`), inst.details, '🎹', 'Instrumental', 'Open the instrumental version');
+        addTwinButton(twinActions.get(`${inst.imprintKey}|${inst.name}`), sung.details, '🎤', 'With vocals', 'Open the version with vocals');
+      });
+    }
+
+    function addTwinButton(actionsDiv, target, icon, label, title) {
+      if (!actionsDiv) return;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-album-share btn-album-twin';
+      btn.title = title;
+      btn.setAttribute('aria-label', title);
+      btn.innerHTML = `<span class="desktop-only">${icon} ${label}</span><span class="mobile-only">${icon}</span>`;
+      btn.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        target.open = true;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      actionsDiv.insertBefore(btn, actionsDiv.querySelector('.btn-album-share'));
     }
 
     // Every upload gets a dated entry in the podcast feed, so the newest
