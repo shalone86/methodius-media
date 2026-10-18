@@ -3117,7 +3117,9 @@
 
           // Detect [sung]/[spoken] tag embedded in the album name itself
           const albumTagMatch = rawAlbumName.match(/\[(sung|spoken)\]|\((sung|spoken)\)/i);
-          const albumSpecialTag = albumTagMatch ? sanitizeTag(albumTagMatch[1] || albumTagMatch[2]) : null;
+          // An instrumental version is only "Instrumental", whatever its sung twin is.
+          const albumSpecialTag = albumTagMatch && !/\[instrumental\]|\(instrumental\)/i.test(rawAlbumName)
+            ? sanitizeTag(albumTagMatch[1] || albumTagMatch[2]) : null;
           
           // Extract 4-digit date tags like [2026] or (2026)
           const yearMatch = rawAlbumName.match(/\[(\d{4})\]|\((\d{4})\)/);
@@ -3179,7 +3181,7 @@
               if (!trackTag && albumSpecialTag) {
                 trackTag = albumSpecialTag;
               }
-              if (!trackTag && isInstrumental) trackTag = 'Instrumental';
+              if (isInstrumental || /\binstrumental\b/i.test(trackTag)) trackTag = 'Instrumental';
 
               // The Instrumental tag already says it, so the title drops the
               // word. Downloads keep the full name from the file.
