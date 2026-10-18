@@ -9,7 +9,7 @@ The website (https://methodius.media) builds its song list with JavaScript, so t
 - [catalog.json](https://media.methodius.media/catalog.json): every album and song, as a JSON list of albums.
 
 Each album has:
-- `albumName`: the folder name. Tags in brackets mark the style ([sung], [spoken]), instrumental versions without vocals ([instrumental]) and the year ([2026]).
+- `albumName`: the folder name. Tags in brackets mark the style ([sung], [spoken]), instrumental versions without vocals ([instrumental]) and the year ([2026]). An instrumental version kept in the same folder as its album is listed as its own entry, with [instrumental] added to the name and its own `zipUrl`.
 - `imprintFolder`: the section: "catholic lofi", "chapel pop" or "chapel ambient". A "pious piano" album may still appear here; it is retired from the website but its files remain public domain.
 - `zipUrl`: path of the full-album ZIP, or null while the album is still in progress.
 - `coverArt`: path of the full-size cover image. `coverThumb`: a 320px copy.
