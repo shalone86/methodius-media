@@ -2042,7 +2042,8 @@
     }
 
     function shareLink(hash, btn) {
-      const shareUrl = `${window.location.origin}${window.location.pathname}${hash}`;
+      // /listen/… shows the song's art in link previews, then opens this page at the hash.
+      const shareUrl = `${window.location.origin}/listen/${hash.slice(1)}`;
       history.pushState(null, null, hash);
       
       navigator.clipboard.writeText(shareUrl).then(() => {

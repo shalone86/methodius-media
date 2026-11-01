@@ -73,7 +73,8 @@ const SITE = {
   },
   sitemap: albumsSitemap,
   handles: (parts) => parts[0] === 'album' || parts[0] === 'song',
-  route: albumsRoute
+  route: albumsRoute,
+  shareItems: albumsShareItems
 };
 // ---------- Album and song pages (Methodius and Catholic Lofi) ----------
 // SITE.build turns the catalog into albums shaped like:
@@ -96,6 +97,19 @@ function albumsSitemap(albums) {
     for (const s of a.songs) paths.push(songPath(a, s));
   }
   return paths;
+}
+
+function albumsShareItems(albums) {
+  const items = [];
+  for (const a of albums) {
+    items.push({ ids: [a.mainLink.slice(2)], title: `${a.name} — ${SITE.name}`, path: albumPath(a), image: a.cover || SITE.image,
+      description: `${a.name} by ${SITE.artist}: ${a.songs.length} ${a.songs.length === 1 ? 'song' : 'songs'}, free to hear, download and reuse.` });
+    for (const s of a.songs) {
+      items.push({ ids: [s.mainLink.slice(2)], title: `${s.title} — ${a.name}`, path: songPath(a, s), image: a.cover || SITE.image,
+        description: `“${s.title}” from ${a.name} by ${SITE.artist}. Free to hear, download and reuse.` });
+    }
+  }
+  return items;
 }
 
 function albumsRoute(parts, albums) {
@@ -219,7 +233,7 @@ function sitemapResponse(paths) {
   return new Response(body, { headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
 }
 
-function page({ title, description, path, image, jsonLd, body, noindex = false }) {
+function page({ title, description, path, image, jsonLd, body, noindex = false, refresh = '' }) {
   const canonical = SITE.url + path;
   return `<!DOCTYPE html>
 <html lang="en">
@@ -229,6 +243,7 @@ function page({ title, description, path, image, jsonLd, body, noindex = false }
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
   ${noindex ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${esc(canonical)}">`}
+  ${refresh ? `<meta http-equiv="refresh" content="0; url=${esc(refresh)}">` : ''}
   <meta name="theme-color" content="${SITE.theme.bg}">
   <meta property="og:title" content="${esc(title)}">
   <meta property="og:description" content="${esc(description)}">
@@ -291,6 +306,18 @@ function notFoundPage(message) {
   return page({ title: SITE.name, description: message, path: '/', noindex: true, body: `<h1>${esc(message)}</h1><p class="sub"><a href="/">Go to ${esc(SITE.name)}</a></p>` });
 }
 
+// Share links: /listen/<id> shows the album's or song's own title and cover
+// to link previews (texts, social posts), then sends people straight on to
+// /#<id> on the main page, the same place the old share links went.
+// It isn't indexed by search; the real page is.
+function sharePage(id, data) {
+  const target = `/#${id}`;
+  const item = SITE.shareItems(data).find((i) => i.ids.includes(id));
+  if (!item) return null;
+  return page({ ...item, noindex: true, refresh: target,
+    body: `<h1>${esc(item.title)}</h1><p class="sub"><a href="${esc(target)}">Open on ${esc(SITE.name)}</a></p>` });
+}
+
 const trackList = (items) => `<ol>${items.map((i) => `<li><a href="${esc(i.href)}"><span class="num">${esc(i.num)}</span><span>${esc(i.title)}</span></a></li>`).join('')}</ol>`;
 
 export default {
@@ -300,12 +327,19 @@ export default {
     try { parts = url.pathname.split('/').filter(Boolean).map(decodeURIComponent); } catch (e) { parts = []; }
     try {
       if (url.pathname === '/sitemap.xml') return sitemapResponse(SITE.sitemap(await loadCatalog()));
+      if (parts[0] === 'listen' && parts.length === 2) {
+        const out = sharePage(parts[1], await loadCatalog());
+        if (out) return html(out);
+        return Response.redirect(`${url.origin}/#${encodeURIComponent(parts[1])}`, 302);
+      }
       if (SITE.handles(parts)) {
         const out = SITE.route(parts, await loadCatalog());
         if (out) return html(out);
       }
     } catch (err) {
       console.error('Pages:', err);
+      // A share link still gets people to the main page.
+      if (parts[0] === 'listen' && parts.length === 2) return Response.redirect(`${url.origin}/#${encodeURIComponent(parts[1])}`, 302);
       return html(notFoundPage('This page couldn’t load right now. Please try again in a minute.'), 503);
     }
     // Anything else: the site's static files, or a friendly not-found page.
