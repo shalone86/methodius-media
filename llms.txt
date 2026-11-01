@@ -4,6 +4,10 @@
 
 The website (https://methodius.media) builds its song list with JavaScript, so the raw HTML has few links. Use the catalog file below instead. Everything is served from https://media.methodius.media/.
 
+## Pages
+
+- Every album has its own page at https://methodius.media/album/<album> and every song at https://methodius.media/song/<album>/<song> (with lyrics and chords when known), all listed in [sitemap.xml](https://methodius.media/sitemap.xml).
+
 ## Catalog
 
 - [catalog.json](https://media.methodius.media/catalog.json): every album and song, as a JSON list of albums.

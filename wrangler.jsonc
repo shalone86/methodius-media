@@ -1,12 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "methodius-media",
+  // worker.js builds the album and song pages and the sitemap; everything
+  // else is served from the static files in this folder.
+  "main": "worker.js",
   "compatibility_date": "2026-06-04",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "binding": "ASSETS"
   },
   "compatibility_flags": [
     "nodejs_compat"
