@@ -865,7 +865,8 @@
       flex-wrap: nowrap !important;
     }
 
-    /* Mobile Play Button - Specific CSS */
+    /* Play button on each song row: round on desktop, labelled on phones */
+    .btn-row-play,
     .btn-mobile-play {
       background: var(--accent);
       color: #000;
@@ -884,6 +885,18 @@
       white-space: nowrap;
       flex-direction: row !important;
       flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .btn-row-play:hover,
+    .btn-mobile-play:hover {
+      background: var(--accent-hover);
+    }
+    @media (min-width: 641px) {
+      .btn-row-play {
+        padding: 0;
+        width: 28px;
+        border-radius: 50%;
+      }
     }
 
     .mobile-only { display: none !important; }
@@ -914,8 +927,15 @@
       .btn-queue,
       .badge,
       .track-tag-badge,
+      .btn-row-play,
       .btn-mobile-play {
         height: 34px !important;
+      }
+
+      .btn-row-play {
+        width: auto !important;
+        padding: 0 0.8rem !important;
+        border-radius: 4px !important;
       }
 
       /* Specific square width limits for generic icon buttons (download/share on tracks & album share) */
@@ -2003,21 +2023,27 @@
     let currentShufflePool = [];
     let isShuffleActive = false;
     let currentTrackIndex = -1;
-    let activeAudioEl = null;
     let trackQueue = [];
+    let activeTrack = null;
+
+    // SINGLE MASTER AUDIO ELEMENT FOR BACKGROUND PLAY
+    // A single continuous audio pipeline keeps playback alive on mobile
+    // (especially Samsung One UI / Android lock screen) without autoplay blocks.
+    const masterAudio = new Audio();
+    masterAudio.preload = "auto";
+    let activeAudioEl = masterAudio;
 
     // KEEP-ALIVE FOR LOCKED PHONES
     // Some phones (Samsung especially) freeze the browser the instant a song
     // ends with the screen locked, before the next song can start. A second
     // player loops ten seconds of silence for as long as music should be
     // playing, so the phone never sees a gap between songs. It stops when
-    // the listener pauses, at a sleep-timer end, or if no song starts within
-    // 30 seconds.
+    // the listener pauses, on an error, or if no song starts within 30
+    // seconds.
     const keepAlive = new Audio('/silence.wav');
     keepAlive.loop = true;
     keepAlive.preload = 'none';
     let gapStartedAt = 0;
-    const musicPlaying = () => !!activeAudioEl && !activeAudioEl.paused && !activeAudioEl.ended;
     function startKeepAlive() {
       gapStartedAt = 0;
       if (keepAlive.paused) keepAlive.play().catch(() => {});
@@ -2027,38 +2053,163 @@
       keepAlive.pause();
     }
     keepAlive.addEventListener('timeupdate', () => {
-      if (musicPlaying()) { gapStartedAt = 0; return; }
+      const musicPlaying = !masterAudio.paused && !masterAudio.ended;
+      if (musicPlaying) { gapStartedAt = 0; return; }
       if (!gapStartedAt) gapStartedAt = Date.now();
       else if (Date.now() - gapStartedAt > 30000) stopKeepAlive();
-    });
-    // Tell the lock screen where the song is (with the silent keep-alive
-    // also playing, the phone can't work it out on its own).
-    function reportPosition(el) {
-      const dur = el.duration;
-      if (!('mediaSession' in navigator) || !navigator.mediaSession.setPositionState || !(dur > 0) || !isFinite(dur)) return;
-      try { navigator.mediaSession.setPositionState({ duration: dur, position: Math.min(el.currentTime, dur), playbackRate: el.playbackRate || 1 }); } catch (e) { /* ignore */ }
-    }
-    // A song that was meant to start while the phone was locked but never
-    // loaded: start it again on return instead of leaving it frozen.
-    document.addEventListener('visibilitychange', () => {
-      const el = activeAudioEl;
-      if (!document.hidden && el && !el.paused && el.currentTime === 0 && el.readyState < 2) {
-        el.load();
-        el.play().catch(() => {});
-      }
     });
 
     function toggleTrackRow(btn) {
       const parentRow = btn.closest('.track-row');
-      const audioEl = parentRow ? parentRow.querySelector('audio') : null;
-      if (audioEl) {
-        if (audioEl.paused) {
-          audioEl.play();
+      if (!parentRow) return;
+      const trackObj = globalTrackPool.find(t => t.rowElement === parentRow);
+      if (!trackObj) return;
+
+      if (activeTrack === trackObj) {
+        if (masterAudio.error || masterAudio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+          playTrackByObj(trackObj, true);
+        } else if (masterAudio.paused) {
+          masterAudio.play().catch(() => playTrackByObj(trackObj, true));
         } else {
-          audioEl.pause();
+          masterAudio.pause();
         }
+      } else {
+        playTrackByObj(trackObj);
       }
     }
+
+    // Master audio listeners handle UI sync and seamless continuous background play
+    masterAudio.addEventListener('play', () => {
+      if (!activeTrack) return;
+      startKeepAlive();
+
+      document.querySelectorAll('.track-row.playing').forEach(r => {
+        r.classList.remove('playing');
+        const icon = r.querySelector('.btn-play-icon');
+        if (icon) icon.textContent = "▶";
+        const label = r.querySelector('.btn-play-label');
+        if (label) label.textContent = " Play";
+        const oldMobileBtn = r.querySelector('.btn-mobile-play');
+        if (oldMobileBtn) oldMobileBtn.innerHTML = "▶ Play";
+      });
+
+      if (activeTrack.rowElement) {
+        activeTrack.rowElement.classList.add('playing');
+        const icon = activeTrack.rowElement.querySelector('.btn-play-icon');
+        if (icon) icon.textContent = "⏸";
+        const label = activeTrack.rowElement.querySelector('.btn-play-label');
+        if (label) label.textContent = " Pause";
+        const mobileBtn = activeTrack.rowElement.querySelector('.btn-mobile-play');
+        if (mobileBtn) mobileBtn.innerHTML = "⏸ Pause";
+      }
+
+      currentTrackIndex = globalTrackPool.indexOf(activeTrack);
+      updateNowPlayingBar(activeTrack);
+      updateQueueNowPlaying(activeTrack);
+      markSearchResults();
+
+      const npToggle = document.getElementById('btn-np-toggle');
+      if (npToggle) npToggle.textContent = "⏸";
+      const qpToggle = document.getElementById('qp-toggle');
+      if (qpToggle) qpToggle.textContent = "⏸";
+
+      const trackSlug = slugify(`${activeTrack.albumName}-${activeTrack.title}`);
+      history.replaceState(null, null, `#track-${trackSlug}`);
+
+      if (trackQueue.includes(activeTrack)) toggleQueueTrack(activeTrack);
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "playing";
+      }
+    });
+
+    masterAudio.addEventListener('pause', () => {
+      stopKeepAlive();
+      if (activeTrack && activeTrack.rowElement) {
+        const icon = activeTrack.rowElement.querySelector('.btn-play-icon');
+        if (icon) icon.textContent = "▶";
+        const label = activeTrack.rowElement.querySelector('.btn-play-label');
+        if (label) label.textContent = " Play";
+        const mobileBtn = activeTrack.rowElement.querySelector('.btn-mobile-play');
+        if (mobileBtn) mobileBtn.innerHTML = "▶ Play";
+      }
+      const npToggle = document.getElementById('btn-np-toggle');
+      if (npToggle) npToggle.textContent = "▶";
+      const qpToggle = document.getElementById('qp-toggle');
+      if (qpToggle) qpToggle.textContent = "▶";
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+      }
+    });
+
+    masterAudio.addEventListener('timeupdate', () => {
+      const curr = masterAudio.currentTime;
+      const dur = masterAudio.duration || 0;
+      const currEl = document.getElementById('np-time-curr');
+      const durEl = document.getElementById('np-time-dur');
+      if (currEl) currEl.textContent = formatTime(curr);
+      if (durEl) durEl.textContent = formatTime(dur);
+
+      const pct = dur > 0 ? (curr / dur) * 100 : 0;
+      const fillEl = document.getElementById('np-progress-fill');
+      if (fillEl) fillEl.style.width = `${pct}%`;
+
+      // Tell the lock screen where the song is (with the silent keep-alive
+      // also playing, the phone can't work it out on its own).
+      if ('mediaSession' in navigator && navigator.mediaSession.setPositionState && dur > 0 && isFinite(dur)) {
+        try { navigator.mediaSession.setPositionState({ duration: dur, position: Math.min(curr, dur), playbackRate: masterAudio.playbackRate || 1 }); } catch (e) { /* ignore */ }
+      }
+    });
+
+    masterAudio.addEventListener('ended', () => {
+      if (sleepTimer.mode === 'end' || sleepTimer.fading) {
+        stopKeepAlive();
+        setSleepTimer('off');
+        return;
+      }
+      playNextTrack();
+    });
+
+    masterAudio.addEventListener('error', (e) => {
+      console.warn("Master audio error:", e);
+      stopKeepAlive();
+      if (activeTrack && activeTrack.rowElement) {
+        const icon = activeTrack.rowElement.querySelector('.btn-play-icon');
+        if (icon) icon.textContent = "▶";
+        const label = activeTrack.rowElement.querySelector('.btn-play-label');
+        if (label) label.textContent = " Play";
+        const oldMobileBtn = activeTrack.rowElement.querySelector('.btn-mobile-play');
+        if (oldMobileBtn) oldMobileBtn.innerHTML = "▶ Play";
+      }
+      const npToggle = document.getElementById('btn-np-toggle');
+      if (npToggle) npToggle.textContent = "▶";
+      const qpToggle = document.getElementById('qp-toggle');
+      if (qpToggle) qpToggle.textContent = "▶";
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "paused";
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && activeTrack) {
+        if (masterAudio.error || masterAudio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+          masterAudio.load();
+        } else if (!masterAudio.paused && masterAudio.currentTime === 0 && masterAudio.readyState < 2) {
+          // A song that was meant to start while the phone was locked but
+          // never loaded: start it again instead of leaving it frozen.
+          playTrackByObj(activeTrack, true);
+        }
+        if (activeTrack.rowElement) {
+          const icon = activeTrack.rowElement.querySelector('.btn-play-icon');
+          if (icon) icon.textContent = masterAudio.paused ? "▶" : "⏸";
+          const label = activeTrack.rowElement.querySelector('.btn-play-label');
+          if (label) label.textContent = masterAudio.paused ? " Play" : " Pause";
+          const oldMobileBtn = activeTrack.rowElement.querySelector('.btn-mobile-play');
+          if (oldMobileBtn) oldMobileBtn.innerHTML = masterAudio.paused ? "▶ Play" : "⏸ Pause";
+        }
+      }
+    });
 
     // Short names tag each search result with its section; full names
     // label album results.
@@ -2148,12 +2299,9 @@
             targetEl.style.boxShadow = '';
           }, 3000);
 
-          const audioEl = targetEl.querySelector('audio');
-          if (audioEl) {
-            const trackObj = globalTrackPool.find(t => t.audioElement === audioEl);
-            if (trackObj && activeAudioEl !== audioEl) {
-              playTrackByObj(trackObj);
-            }
+          const trackObj = globalTrackPool.find(t => t.rowElement === targetEl);
+          if (trackObj && activeTrack !== trackObj) {
+            playTrackByObj(trackObj);
           }
         }, 300);
       }
@@ -2611,16 +2759,37 @@
       }
     }
 
-    function playTrackByObj(track) {
+    function playTrackByObj(track, forceReload = false) {
       if (!track) return;
 
-      document.querySelectorAll('audio').forEach(a => a.pause());
       scrollToTrackRow(track);
 
-      if (track.audioElement) {
-        track.audioElement.currentTime = 0;
-        startKeepAlive();
-        track.audioElement.play();
+      const needsNewSource = forceReload || activeTrack !== track || masterAudio.src !== track.url || masterAudio.error;
+
+      activeTrack = track;
+      currentTrackIndex = globalTrackPool.indexOf(track);
+
+      // Immediately sync Now Playing & lock screen MediaSession before buffer wait
+      updateNowPlayingBar(track);
+
+      if (needsNewSource) {
+        masterAudio.src = track.url;
+        masterAudio.load();
+      }
+
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = "playing";
+      }
+
+      startKeepAlive();
+      const p = masterAudio.play();
+      if (p !== undefined) {
+        p.catch(err => {
+          console.warn("Playback error:", err);
+          if (masterAudio.error) {
+            masterAudio.load();
+          }
+        });
       }
     }
 
@@ -2935,11 +3104,16 @@
     }
 
     function toggleNowPlaying() {
-      if (!activeAudioEl) return;
-      if (activeAudioEl.paused) {
-        activeAudioEl.play();
+      if (!activeTrack) {
+        if (globalTrackPool.length > 0) playTrackByObj(globalTrackPool[0]);
+        return;
+      }
+      if (masterAudio.error || masterAudio.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
+        playTrackByObj(activeTrack, true);
+      } else if (masterAudio.paused) {
+        masterAudio.play().catch(() => playTrackByObj(activeTrack, true));
       } else {
-        activeAudioEl.pause();
+        masterAudio.pause();
       }
     }
 
@@ -3084,13 +3258,27 @@
         navigator.mediaSession.metadata = new MediaMetadata({
           title: trackObj.title,
           artist: "Cyril & Methodius Media",
-          album: trackObj.albumName
+          album: trackObj.albumName,
+          artwork: [trackObj.coverArt ? { src: trackObj.coverArt, sizes: '512x512', type: 'image/jpeg' }
+            : trackObj.coverThumb ? { src: trackObj.coverThumb, sizes: '256x256', type: 'image/jpeg' }
+            : { src: '/web-app-manifest-512x512.png', sizes: '512x512', type: 'image/png' }]
         });
 
-        navigator.mediaSession.setActionHandler('play', () => activeAudioEl && activeAudioEl.play());
-        navigator.mediaSession.setActionHandler('pause', () => activeAudioEl && activeAudioEl.pause());
-        navigator.mediaSession.setActionHandler('previoustrack', playPrevTrack);
-        navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
+        navigator.mediaSession.playbackState = masterAudio.paused ? "paused" : "playing";
+
+        try {
+          navigator.mediaSession.setActionHandler('play', () => masterAudio.play().catch(console.error));
+          navigator.mediaSession.setActionHandler('pause', () => masterAudio.pause());
+          navigator.mediaSession.setActionHandler('previoustrack', playPrevTrack);
+          navigator.mediaSession.setActionHandler('nexttrack', playNextTrack);
+          navigator.mediaSession.setActionHandler('seekto', (details) => {
+            if (details.seekTime != null && masterAudio.duration) {
+              masterAudio.currentTime = details.seekTime;
+            }
+          });
+        } catch (err) {
+          console.warn("MediaSession handler error:", err);
+        }
       }
     }
 
@@ -3364,14 +3552,14 @@
 
               row.innerHTML = `
                 <div class="track-title-wrap">
-                  <button class="btn-mobile-play mobile-only" onclick="toggleTrackRow(this)">▶ Play</button>
+                  <button class="btn-row-play" onclick="toggleTrackRow(this)" title="Play track" aria-label="Play ${track.title}">
+                    <span class="btn-play-icon">▶</span>
+                    <span class="btn-play-label mobile-only"> Play</span>
+                  </button>
                   <span class="track-title">${track.title}</span>
                   ${tagHtml}
                 </div>
                 <div class="track-controls-wrap">
-                  <audio class="audio-player" controls preload="none">
-                    <source src="${track.url}" type="audio/mpeg">
-                  </audio>
                   <div class="track-btn-group">
                     <button class="btn-queue" title="Add to queue">
                       <span class="desktop-only">+ Queue</span>
@@ -3398,8 +3586,6 @@
                 </div>
               `;
 
-              const audioEl = row.querySelector('audio');
-
               const trackObj = {
                 title: track.title,
                 albumName: albumName,
@@ -3409,7 +3595,7 @@
                 coverThumb: albumData.coverThumb || null,
                 instrumental: !!albumData.instrumental,
                 tag: track.tag || '',
-                audioElement: audioEl,
+                audioElement: masterAudio,
                 accordion: details,
                 rowElement: row
               };
@@ -3420,55 +3606,6 @@
               queueBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 toggleQueueTrack(trackObj);
-              });
-
-              const mobilePlayBtn = row.querySelector('.btn-mobile-play');
-
-              // Audio State Change Event Listeners
-              audioEl.addEventListener('play', () => {
-                startKeepAlive();
-                if (mobilePlayBtn) mobilePlayBtn.innerHTML = "⏸ Pause";
-                if (activeAudioEl && activeAudioEl !== audioEl) {
-                  activeAudioEl.closest('.track-row').classList.remove('playing');
-                }
-                row.classList.add('playing');
-                activeAudioEl = audioEl;
-                currentTrackIndex = globalTrackPool.indexOf(trackObj);
-                updateNowPlayingBar(trackObj);
-                updateQueueNowPlaying(trackObj);
-                markSearchResults();
-                document.getElementById('btn-np-toggle').textContent = "⏸";
-                document.getElementById('qp-toggle').textContent = "⏸";
-                history.replaceState(null, null, `#track-${trackSlug}`);
-
-                // A track that starts playing is no longer "up next" -- drop it
-                // from the queue whether it got here via the queue itself or was
-                // played directly while still queued.
-                if (trackQueue.includes(trackObj)) toggleQueueTrack(trackObj);
-              });
-
-              audioEl.addEventListener('pause', () => {
-                if (mobilePlayBtn) mobilePlayBtn.innerHTML = "▶ Play";
-                if (activeAudioEl === audioEl) {
-                  document.getElementById('btn-np-toggle').textContent = "▶";
-                  document.getElementById('qp-toggle').textContent = "▶";
-                  // Switching songs pauses the old one just before the new
-                  // one starts, so only stop if nothing is playing a moment later.
-                  setTimeout(() => { if (!musicPlaying()) stopKeepAlive(); }, 0);
-                }
-              });
-
-              audioEl.addEventListener('timeupdate', () => {
-                if (activeAudioEl === audioEl) {
-                  reportPosition(audioEl);
-                  const curr = audioEl.currentTime;
-                  const dur = audioEl.duration || 0;
-                  document.getElementById('np-time-curr').textContent = formatTime(curr);
-                  document.getElementById('np-time-dur').textContent = formatTime(dur);
-                  
-                  const pct = dur > 0 ? (curr / dur) * 100 : 0;
-                  document.getElementById('np-progress-fill').style.width = `${pct}%`;
-                }
               });
 
               trackListEl.appendChild(row);
@@ -3590,20 +3727,7 @@
     }
 
     function setupContinuousPlayback() {
-      document.addEventListener('play', (e) => {
-        document.querySelectorAll('audio').forEach(audio => {
-          if (audio !== e.target) audio.pause();
-        });
-      }, true);
-
-      document.addEventListener('ended', (e) => {
-        if (sleepTimer.mode === 'end' || sleepTimer.fading) {
-          stopKeepAlive();
-          setSleepTimer('off');
-          return;
-        }
-        playNextTrack();
-      }, true);
+      // Background continuous playback is centrally managed by masterAudio listeners
     }
 
     window.addEventListener('hashchange', handleDeepLink);
